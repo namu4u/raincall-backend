@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+import asyncio
 import httpx
 from datetime import datetime, date
 from typing import Optional, List, Dict, Any
@@ -95,6 +96,8 @@ class RealtimePrediction(BaseModel):
     data_source: str           # 호출한 기상청 API 종류
     kma_base_time: str         # 기상청 관측/발표 기준 시각
     fetched_at: str            # ISO8601 조회 시각
+    models: Optional[Dict[str, Any]] = None   # 모델별 수치 + 앙상블
+    model_agreement: Optional[str] = None     # 높음 | 보통 | 낮음
 
 class GameStatusInfo(BaseModel):
     status: str                      # scheduled | in_progress | canceled | completed
@@ -434,6 +437,55 @@ def _parse_pcp(raw: str) -> float:
     return float(raw.replace("mm", "").strip() or "0")
 
 
+async def fetch_open_meteo(lat: float, lon: float, model: str) -> Dict[str, Any]:
+    """Open-Meteo API 호출 (무료, API 키 불필요).
+    현재 시각 기준 1시간 강수량·풍속·강수확률 반환.
+    """
+    url = (
+        "https://api.open-meteo.com/v1/forecast"
+        f"?latitude={lat}&longitude={lon}"
+        "&hourly=precipitation,windspeed_10m,precipitation_probability"
+        f"&forecast_days=1&timezone=Asia%2FSeoul&models={model}"
+    )
+    async with httpx.AsyncClient(timeout=10) as client:
+        res = await client.get(url)
+        res.raise_for_status()
+        data = res.json()
+
+    hourly = data.get("hourly", {})
+    times = hourly.get("time", [])
+    precip = hourly.get("precipitation", [])
+    wind = hourly.get("windspeed_10m", [])
+    precip_prob = hourly.get("precipitation_probability", [])
+
+    # 현재 시각과 가장 가까운 인덱스 찾기
+    now_str = datetime.now().strftime("%Y-%m-%dT%H:00")
+    idx = times.index(now_str) if now_str in times else 0
+
+    return {
+        "precipitation": float(precip[idx]) if precip else 0.0,
+        "windspeed":     float(wind[idx])   if wind   else 0.0,
+        "precip_prob":   int(precip_prob[idx]) if precip_prob else 0,
+    }
+
+
+def calc_ensemble(kma_rain: float, gfs_rain: float, ecmwf_rain: float) -> float:
+    """가중 평균 앙상블: 기상청 40% + GFS 30% + ECMWF 30%"""
+    return kma_rain * 0.4 + gfs_rain * 0.3 + ecmwf_rain * 0.3
+
+
+def model_agreement_level(kma_rain: float, gfs_rain: float, ecmwf_rain: float) -> str:
+    """모델 간 강수량 표준편차 기반 동의도 계산."""
+    values = [kma_rain, gfs_rain, ecmwf_rain]
+    mean = sum(values) / 3
+    std = (sum((v - mean) ** 2 for v in values) / 3) ** 0.5
+    if std <= 0.5:
+        return "높음"
+    if std <= 2.0:
+        return "보통"
+    return "낮음"
+
+
 async def fetch_naver_game_status(game_date: Optional[date] = None) -> Dict[str, GameStatusInfo]:
     """네이버 스포츠 API로 KBO 경기 실시간 상태 조회. 5분 캐시."""
     now_ts = datetime.now().timestamp()
@@ -575,9 +627,41 @@ async def predict_realtime(slug: str):
     stadium_key = STADIUM_SLUGS[slug]
     stadium = STADIUMS[stadium_key]
     is_dome = stadium_key == "고척"
+    lat, lon = stadium["lat"], stadium["lon"]
 
-    weather, base_time = await fetch_ultra_realtime(stadium["nx"], stadium["ny"])
-    prob, reasons = kbo_cancellation_engine(weather, is_dome)
+    # KMA + GFS + ECMWF 병렬 호출
+    kma_result, gfs_result, ecmwf_result = await asyncio.gather(
+        fetch_ultra_realtime(stadium["nx"], stadium["ny"]),
+        fetch_open_meteo(lat, lon, "gfs_seamless"),
+        fetch_open_meteo(lat, lon, "ecmwf_ifs04"),
+        return_exceptions=True,
+    )
+
+    if isinstance(kma_result, Exception):
+        raise HTTPException(502, f"기상청 초단기실황 오류: {kma_result}")
+    weather, base_time = kma_result
+
+    kma_rain = weather.precipitation
+    gfs_rain  = gfs_result["precipitation"]  if not isinstance(gfs_result,  Exception) else kma_rain
+    ecmwf_rain = ecmwf_result["precipitation"] if not isinstance(ecmwf_result, Exception) else kma_rain
+
+    ensemble_rain = round(calc_ensemble(kma_rain, gfs_rain, ecmwf_rain), 2)
+    agreement = model_agreement_level(kma_rain, gfs_rain, ecmwf_rain)
+
+    # 앙상블 강수량으로 취소 확률 재계산
+    ensemble_weather = weather.model_copy(update={"precipitation": ensemble_rain})
+    prob, reasons = kbo_cancellation_engine(ensemble_weather, is_dome)
+
+    # 각 모델의 취소 판정 (강수 1mm 이상 = 취소 위험)
+    cancel_votes = sum(1 for r in [kma_rain, gfs_rain, ecmwf_rain] if r >= 1.0)
+
+    models_data: Dict[str, Any] = {
+        "kma":          {"rain_1h": round(kma_rain,   2), "weight": "40%"},
+        "gfs":          {"rain_1h": round(gfs_rain,   2), "weight": "30%"},
+        "ecmwf":        {"rain_1h": round(ecmwf_rain, 2), "weight": "30%"},
+        "ensemble":     ensemble_rain,
+        "cancel_votes": cancel_votes,
+    }
 
     return RealtimePrediction(
         slug=slug,
@@ -587,10 +671,12 @@ async def predict_realtime(slug: str):
         cancel_probability=round(prob, 3),
         risk_level=risk_label(prob),
         reasons=reasons,
-        weather=weather,
-        data_source="getUltraSrtNcst",
+        weather=ensemble_weather,
+        data_source="KMA+GFS+ECMWF 앙상블",
         kma_base_time=base_time,
         fetched_at=datetime.now().isoformat(timespec="seconds"),
+        models=models_data,
+        model_agreement=agreement,
     )
 
 
