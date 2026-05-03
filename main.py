@@ -470,8 +470,9 @@ async def fetch_open_meteo(lat: float, lon: float, model: str) -> Dict[str, Any]
 
 
 def calc_ensemble(kma_rain: float, gfs_rain: float, ecmwf_rain: float) -> float:
-    """가중 평균 앙상블: 기상청 40% + GFS 30% + ECMWF 30%"""
-    return kma_rain * 0.4 + gfs_rain * 0.3 + ecmwf_rain * 0.3
+    """가중 평균 앙상블: 기상청 50% + GFS 20% + ECMWF 30%
+    GFS는 한반도 강수를 과대 추정하는 경향이 있어 가중치 낮춤."""
+    return kma_rain * 0.5 + gfs_rain * 0.2 + ecmwf_rain * 0.3
 
 
 def model_agreement_level(kma_rain: float, gfs_rain: float, ecmwf_rain: float) -> str:
@@ -655,12 +656,19 @@ async def predict_realtime(slug: str):
     # 각 모델의 취소 판정 (강수 1mm 이상 = 취소 위험)
     cancel_votes = sum(1 for r in [kma_rain, gfs_rain, ecmwf_rain] if r >= 1.0)
 
+    # GFS 과대 추정 감지: std ≥ 1.5mm 이고 GFS가 가장 높을 때
+    _vals = [kma_rain, gfs_rain, ecmwf_rain]
+    _mean = sum(_vals) / 3
+    _std  = (sum((v - _mean) ** 2 for v in _vals) / 3) ** 0.5
+    gfs_outlier = _std >= 1.5 and gfs_rain == max(_vals)
+
     models_data: Dict[str, Any] = {
-        "kma":          {"rain_1h": round(kma_rain,   2), "weight": "40%"},
-        "gfs":          {"rain_1h": round(gfs_rain,   2), "weight": "30%"},
+        "kma":          {"rain_1h": round(kma_rain,   2), "weight": "50%"},
+        "gfs":          {"rain_1h": round(gfs_rain,   2), "weight": "20%"},
         "ecmwf":        {"rain_1h": round(ecmwf_rain, 2), "weight": "30%"},
         "ensemble":     ensemble_rain,
         "cancel_votes": cancel_votes,
+        "gfs_outlier":  gfs_outlier,
     }
 
     return RealtimePrediction(
