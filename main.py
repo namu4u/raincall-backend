@@ -4,7 +4,7 @@ import os
 import re
 import httpx
 from datetime import datetime, date
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException
 from bs4 import BeautifulSoup
 from fastapi.middleware.cors import CORSMiddleware
@@ -60,6 +60,8 @@ STADIUM_SLUGS: Dict[str, str] = {
     "changwon":     "창원",
     "busan":        "부산",
 }
+# 구장 키 → slug 역매핑
+STADIUM_KEY_TO_SLUG: Dict[str, str] = {v: k for k, v in STADIUM_SLUGS.items()}
 
 # ── KBO 우천 취소 룰 엔진 ───────────────────────────────────────────
 class WeatherData(BaseModel):
@@ -93,6 +95,14 @@ class RealtimePrediction(BaseModel):
     data_source: str           # 호출한 기상청 API 종류
     kma_base_time: str         # 기상청 관측/발표 기준 시각
     fetched_at: str            # ISO8601 조회 시각
+
+class GameStatusInfo(BaseModel):
+    status: str                      # scheduled | in_progress | canceled | completed
+    home: str
+    away: str
+    reason: Optional[str] = None     # 취소 사유
+    score: Optional[str] = None      # "원정:홈" 형식 (e.g. "3:2")
+    status_detail: Optional[str] = None  # 진행중 상세 (이닝 정보 등)
 
 def kbo_cancellation_engine(weather: WeatherData, is_dome: bool) -> tuple:
     """KBO 공식 우천취소 기준 기반 취소 확률 계산"""
@@ -256,6 +266,23 @@ async def fetch_kbo_schedule_live(game_date: Optional[date] = None) -> List[dict
 
     return MOCK_GAMES
 
+# 네이버 스포츠 홈팀명 → slug 매핑
+_HOME_TEAM_TO_SLUG: Dict[str, str] = {
+    "LG":   "jamsil",
+    "두산": "jamsil",
+    "SSG":  "incheon",
+    "롯데": "busan",
+    "삼성": "lions_park",
+    "한화": "daejeon",
+    "KIA":  "gwangju",
+    "KT":   "suwon",
+    "키움": "gocheok",
+    "NC":   "changwon",
+}
+
+_status_cache: Dict[str, Any] = {}
+_STATUS_CACHE_TTL = 300  # 5분
+
 MOCK_WEATHER: Dict[str, WeatherData] = {
     "잠실":  WeatherData(precipitation=3.5, precipitation_prob=70, sky_condition=4, thunder=False, wind_speed=5.2, temperature=18.0, humidity=85),
     "광주":  WeatherData(precipitation=0.0, precipitation_prob=20, sky_condition=1, thunder=False, wind_speed=2.1, temperature=22.0, humidity=55),
@@ -407,6 +434,68 @@ def _parse_pcp(raw: str) -> float:
     return float(raw.replace("mm", "").strip() or "0")
 
 
+async def fetch_naver_game_status(game_date: Optional[date] = None) -> Dict[str, GameStatusInfo]:
+    """네이버 스포츠 API로 KBO 경기 실시간 상태 조회. 5분 캐시."""
+    now_ts = datetime.now().timestamp()
+    if _status_cache and now_ts - _status_cache.get("cached_at", 0) < _STATUS_CACHE_TTL:
+        return _status_cache["data"]
+
+    target = game_date or date.today()
+    date_str = target.strftime("%Y%m%d")
+    url = (
+        "https://api-gw.sports.naver.com/schedule/games"
+        f"?fields=basic,homeTeam,awayTeam&gameDate={date_str}&leagueId=kbo"
+    )
+    result: Dict[str, GameStatusInfo] = {}
+    try:
+        async with httpx.AsyncClient(timeout=10, headers={"User-Agent": "Mozilla/5.0"}) as client:
+            res = await client.get(url)
+            res.raise_for_status()
+            payload = res.json()
+
+        games = payload.get("result", {}).get("games", [])
+        for g in games:
+            home = g.get("homeTeamName", "")
+            away = g.get("awayTeamName", "")
+            slug = _HOME_TEAM_TO_SLUG.get(home)
+            if not slug:
+                continue
+
+            status_code = g.get("statusCode", "BEFORE")
+            is_cancel = g.get("cancel", False)
+            status_info = g.get("statusInfo", "")
+
+            if is_cancel or status_code == "CANCEL":
+                status = "canceled"
+            elif status_code == "RESULT":
+                status = "completed"
+            elif status_code in ("LIVE", "PLAYING"):
+                status = "in_progress"
+            else:
+                status = "scheduled"
+
+            h_score = g.get("homeTeamScore")
+            a_score = g.get("awayTeamScore")
+            score = None
+            if status in ("completed", "in_progress") and h_score is not None and a_score is not None:
+                score = f"{a_score}:{h_score}"
+
+            result[slug] = GameStatusInfo(
+                status=status,
+                home=home,
+                away=away,
+                reason=status_info if status == "canceled" else None,
+                score=score,
+                status_detail=status_info if status == "in_progress" else None,
+            )
+    except Exception:
+        pass  # 조회 실패 시 빈 dict → 프론트에서 scheduled로 폴백
+
+    _status_cache["data"] = result
+    _status_cache["cached_at"] = now_ts
+    return result
+
+
 # ── API 엔드포인트 ──────────────────────────────────────────────────
 @app.get("/")
 def root():
@@ -526,6 +615,7 @@ async def predict_all():
         results.append({
             "game":              f"{game['away']} @ {game['home']}",
             "game_id":           game["id"],
+            "slug":              STADIUM_KEY_TO_SLUG.get(stadium_key, ""),
             "stadium":           STADIUMS.get(stadium_key, {}).get("name", stadium_key),
             "game_time":         game["time"],
             "cancel_probability": round(prob, 3),
@@ -535,3 +625,10 @@ async def predict_all():
             "is_dome":           is_dome,
         })
     return {"date": date.today().isoformat(), "predictions": results}
+
+
+@app.get("/api/games/today/status")
+async def games_today_status():
+    """네이버 스포츠 API 기반 오늘 경기 실시간 상태 조회 (5분 캐시)."""
+    statuses = await fetch_naver_game_status()
+    return {"date": date.today().isoformat(), "statuses": statuses}
