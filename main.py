@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI(title="RainCall API", description="KBO 경기 취소 예측 서비스")
+app = FastAPI(title="직관예보 API", description="KBO 야구 경기 우천취소 예측 서비스 — 기상청 초단기실황 + KBO 공식 취소 기준 기반")
 
 # 추가 허용 오리진은 ALLOWED_ORIGINS 환경변수로 주입 (쉼표 구분)
 # 예) ALLOWED_ORIGINS=https://frontend-one-eosin-17.vercel.app,https://raincall.vercel.app
@@ -410,7 +410,7 @@ def _parse_pcp(raw: str) -> float:
 # ── API 엔드포인트 ──────────────────────────────────────────────────
 @app.get("/")
 def root():
-    return {"service": "RainCall", "mode": "mock" if MOCK_MODE else "live", "docs": "/docs"}
+    return {"service": "직관예보", "mode": "mock" if MOCK_MODE else "live", "docs": "/docs"}
 
 
 @app.get("/api/games")
