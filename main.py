@@ -6,6 +6,7 @@ import httpx
 from datetime import datetime, date
 from typing import Optional, List, Dict
 from fastapi import FastAPI, HTTPException
+from bs4 import BeautifulSoup
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -156,14 +157,104 @@ def risk_label(prob: float) -> str:
     return "LOW"
 
 
-# ── Mock 데이터 ─────────────────────────────────────────────────────
+# ── KBO 경기 일정 ────────────────────────────────────────────────────
+# 기본값: 오늘(2026-05-03) KBO 공식 확인 대진
 MOCK_GAMES = [
-    {"id": "G001", "home": "두산", "away": "LG", "stadium": "잠실", "time": "18:30"},
-    {"id": "G002", "home": "KIA", "away": "삼성", "stadium": "광주", "time": "18:30"},
-    {"id": "G003", "home": "SSG", "away": "롯데", "stadium": "인천", "time": "18:00"},
-    {"id": "G004", "home": "NC",  "away": "한화", "stadium": "창원", "time": "18:30"},
-    {"id": "G005", "home": "KT",  "away": "키움", "stadium": "수원", "time": "18:30"},
+    {"id": "G001", "home": "LG",   "away": "NC",   "stadium": "잠실", "time": "14:00"},
+    {"id": "G002", "home": "SSG",  "away": "롯데", "stadium": "인천", "time": "14:00"},
+    {"id": "G003", "home": "삼성", "away": "한화", "stadium": "대구", "time": "14:00"},
+    {"id": "G004", "home": "KIA",  "away": "KT",   "stadium": "광주", "time": "14:00"},
+    {"id": "G005", "home": "키움", "away": "두산", "stadium": "고척", "time": "14:00"},
 ]
+
+# 당일 스케줄 캐시 (날짜 바뀌면 자동 무효화)
+_schedule_cache: Dict[str, list] = {}
+
+# KBO 영문 사이트 구장명 → STADIUMS 키 매핑
+_KBO_STADIUM_MAP = {
+    "jamsil":      "잠실",
+    "munhak":      "인천",
+    "incheon":     "인천",
+    "daegu":       "대구",
+    "lions":       "대구",
+    "gwangju":     "광주",
+    "gocheok":     "고척",
+    "gocheoksky":  "고척",
+    "suwon":       "수원",
+    "changwon":    "창원",
+    "sajik":       "부산",
+    "daejeon":     "대전",
+}
+
+# KBO 영문팀명 → 한국어
+_KBO_TEAM_MAP = {
+    "LG Twins":        "LG",
+    "Doosan Bears":    "두산",
+    "KIA Tigers":      "KIA",
+    "Samsung Lions":   "삼성",
+    "SSG Landers":     "SSG",
+    "Lotte Giants":    "롯데",
+    "Hanwha Eagles":   "한화",
+    "NC Dinos":        "NC",
+    "KT Wiz":          "KT",
+    "Kiwoom Heroes":   "키움",
+}
+
+
+async def fetch_kbo_schedule_live(game_date: Optional[date] = None) -> List[dict]:
+    """KBO 공식 영문 사이트에서 당일 경기 일정 스크래핑.
+    파싱 실패 시 MOCK_GAMES 반환.
+    """
+    target = game_date or date.today()
+    date_str = target.strftime("%Y%m%d")
+
+    # 당일 캐시 확인
+    if date_str in _schedule_cache:
+        return _schedule_cache[date_str]
+
+    url = f"https://eng.koreabaseball.com/Schedule/DailySchedule.aspx?gameDate={date_str}"
+    try:
+        async with httpx.AsyncClient(timeout=10, follow_redirects=True,
+                                     headers={"User-Agent": "Mozilla/5.0"}) as client:
+            res = await client.get(url)
+            res.raise_for_status()
+
+        soup = BeautifulSoup(res.text, "lxml")
+        rows = soup.select("table.tbl tr")[1:]  # 헤더 제외
+
+        games = []
+        for i, row in enumerate(rows):
+            cells = [td.get_text(strip=True) for td in row.find_all("td")]
+            if len(cells) < 4:
+                continue
+            # 열 순서: Time | Away | Home | Stadium ...
+            time_str = cells[0][:5] if cells[0] else "14:00"
+            away_en  = cells[1]
+            home_en  = cells[2]
+            stad_raw = cells[3].lower() if len(cells) > 3 else ""
+
+            home = _KBO_TEAM_MAP.get(home_en, home_en)
+            away = _KBO_TEAM_MAP.get(away_en, away_en)
+            stadium = next(
+                (v for k, v in _KBO_STADIUM_MAP.items() if k in stad_raw),
+                stad_raw
+            )
+            games.append({
+                "id":      f"G{i+1:03d}",
+                "home":    home,
+                "away":    away,
+                "stadium": stadium,
+                "time":    time_str,
+            })
+
+        if games:
+            _schedule_cache[date_str] = games
+            return games
+
+    except Exception:
+        pass  # 스크래핑 실패 시 MOCK_GAMES 반환
+
+    return MOCK_GAMES
 
 MOCK_WEATHER: Dict[str, WeatherData] = {
     "잠실":  WeatherData(precipitation=3.5, precipitation_prob=70, sky_condition=4, thunder=False, wind_speed=5.2, temperature=18.0, humidity=85),
@@ -323,8 +414,9 @@ def root():
 
 
 @app.get("/api/games")
-def list_games():
-    return {"date": date.today().isoformat(), "games": MOCK_GAMES}
+async def list_games():
+    games = await fetch_kbo_schedule_live()
+    return {"date": date.today().isoformat(), "games": games, "source": "live" if games is not MOCK_GAMES else "mock"}
 
 
 @app.get("/api/weather/{stadium_key}")
@@ -415,11 +507,31 @@ async def predict_realtime(slug: str):
 
 @app.get("/api/predict-all")
 async def predict_all():
+    games = await fetch_kbo_schedule_live()
     results = []
-    for game in MOCK_GAMES:
-        prediction = await predict_cancellation(game["id"])
+    for game in games:
+        stadium_key = game["stadium"]
+        is_dome = stadium_key == "고척"
+        if MOCK_MODE or not KMA_API_KEY:
+            weather = MOCK_WEATHER.get(stadium_key, WeatherData(
+                precipitation=0, precipitation_prob=0, sky_condition=1,
+                thunder=False, wind_speed=0, temperature=20, humidity=50
+            ))
+        else:
+            stadium = STADIUMS.get(stadium_key)
+            if not stadium:
+                continue
+            weather, _ = await fetch_kma_weather(stadium["nx"], stadium["ny"])
+        prob, reasons = kbo_cancellation_engine(weather, is_dome)
         results.append({
-            "game": f"{game['away']} @ {game['home']}",
-            **prediction.model_dump(),
+            "game":              f"{game['away']} @ {game['home']}",
+            "game_id":           game["id"],
+            "stadium":           STADIUMS.get(stadium_key, {}).get("name", stadium_key),
+            "game_time":         game["time"],
+            "cancel_probability": round(prob, 3),
+            "risk_level":        risk_label(prob),
+            "reasons":           reasons,
+            "weather":           weather,
+            "is_dome":           is_dome,
         })
     return {"date": date.today().isoformat(), "predictions": results}
