@@ -7,6 +7,8 @@ import httpx
 from datetime import datetime, date
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from bs4 import BeautifulSoup
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -28,6 +30,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 MOCK_MODE = os.getenv("MOCK_MODE", "true").lower() == "true"
 KMA_API_KEY = os.getenv("KMA_API_KEY", "")
@@ -553,6 +557,12 @@ async def fetch_naver_game_status(game_date: Optional[date] = None) -> Dict[str,
 @app.get("/")
 def root():
     return {"service": "직관예보", "mode": "mock" if MOCK_MODE else "live", "docs": "/docs"}
+
+
+@app.get("/choir", response_class=FileResponse)
+def choir_finder_app():
+    """동작소년소녀합창단 합창대회 찾기 앱."""
+    return FileResponse("static/choir.html")
 
 
 @app.get("/api/games")

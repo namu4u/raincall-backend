@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>합창대회 찾기 — 동작소년소녀합창단</title>
+  <style>
+    :root {
+      --primary: #7c3aed;
+      --primary-dark: #5b21b6;
+      --primary-light: #ede9fe;
+      --success: #059669;
+      --success-light: #d1fae5;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --gray: #6b7280;
+      --gray-light: #f3f4f6;
+      --text: #111827;
+      --text-sub: #6b7280;
+      --border: #e5e7eb;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.05);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', 'Segoe UI', sans-serif;
+      background: #f5f3ff;
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);
+      color: white;
+      padding: 28px 20px 32px;
+    }
+    .header-inner { max-width: 740px; margin: 0 auto; }
+    .header-icon { font-size: 2.4rem; margin-bottom: 8px; }
+    .header h1 { font-size: 1.65rem; font-weight: 800; margin-bottom: 6px; }
+    .header p { font-size: 0.9rem; opacity: 0.85; margin-bottom: 14px; }
+    .choir-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.82rem;
+    }
+
+    /* ── Main ── */
+    .main { max-width: 740px; margin: 0 auto; padding: 20px 16px; }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      background: white;
+      border-radius: 14px;
+      padding: 18px 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      gap: 0;
+    }
+    .stat {
+      flex: 1;
+      text-align: center;
+      padding: 0 8px;
+      border-right: 1px solid var(--border);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+    .stat-label { font-size: 0.75rem; color: var(--text-sub); margin-top: 2px; }
+
+    /* ── Filters ── */
+    .filters {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .filter-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 0.84rem;
+      cursor: pointer;
+      color: var(--text);
+      transition: all .15s;
+      font-family: inherit;
+    }
+    .filter-btn:hover { border-color: #c4b5fd; }
+    .filter-btn.active {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .filter-select {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 0.84rem;
+      cursor: pointer;
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+      transition: border-color .15s;
+    }
+    .filter-select:focus { border-color: var(--primary); }
+
+    /* ── Section heading ── */
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 10px;
+    }
+
+    /* ── Competition card ── */
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+      border-left: 4px solid transparent;
+      transition: box-shadow .15s, transform .1s;
+    }
+    .card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.10); transform: translateY(-1px); }
+    .card.open   { border-left-color: var(--success); }
+    .card.urgent { border-left-color: var(--danger); }
+    .card.closed { border-left-color: #d1d5db; }
+    .card.ended  { border-left-color: #e5e7eb; opacity: 0.55; }
+    .card.ineligible { opacity: 0.5; }
+
+    /* Card top row */
+    .card-top {
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+      margin-bottom: 8px;
+    }
+    .card-name { font-size: 1rem; font-weight: 700; flex: 1; }
+    .card-badges { display: flex; gap: 5px; flex-shrink: 0; flex-wrap: wrap; }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge-open   { background: var(--success-light); color: var(--success); }
+    .badge-urgent { background: var(--danger-light);  color: var(--danger);  }
+    .badge-closed { background: var(--gray-light);    color: var(--gray);    }
+    .badge-ended  { background: var(--gray-light);    color: #9ca3af;        }
+    .badge-score  { background: var(--primary-light); color: var(--primary); }
+
+    .card-organizer { font-size: 0.82rem; color: var(--text-sub); margin-bottom: 10px; }
+
+    /* Info grid */
+    .card-meta {
+      display: flex; gap: 14px; flex-wrap: wrap;
+      font-size: 0.81rem; color: var(--text-sub);
+      margin-bottom: 8px;
+    }
+    .meta-item { display: flex; align-items: center; gap: 4px; }
+
+    /* Deadline row */
+    .deadline-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 10px;
+    }
+    .dday {
+      font-size: 1.4rem; font-weight: 800; line-height: 1;
+    }
+    .dday.open   { color: var(--success); }
+    .dday.urgent { color: var(--danger);  }
+    .dday.done   { color: #9ca3af;        }
+    .deadline-detail { font-size: 0.8rem; color: var(--text-sub); }
+
+    /* Prize */
+    .card-prize {
+      font-size: 0.9rem; font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 12px;
+    }
+
+    /* Eligibility notes */
+    .elig-notes {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.79rem;
+      color: var(--text-sub);
+    }
+    .elig-notes ul { list-style: none; }
+    .elig-notes li { padding: 1px 0; }
+    .elig-notes li::before { content: '• '; color: var(--primary); }
+
+    /* Expand */
+    .expand-btn {
+      background: none; border: none;
+      font-size: 0.8rem; color: var(--primary);
+      cursor: pointer; margin-top: 10px;
+      padding: 0; font-family: inherit;
+    }
+    .expand-btn:hover { text-decoration: underline; }
+
+    /* Detail section */
+    .card-detail {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+    .detail-section { margin-bottom: 12px; }
+    .detail-section h4 {
+      font-size: 0.78rem; font-weight: 700;
+      color: var(--text-sub); text-transform: uppercase;
+      letter-spacing: .04em; margin-bottom: 6px;
+    }
+    .prize-row {
+      display: flex; justify-content: space-between;
+      font-size: 0.82rem; padding: 3px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .prize-row:last-child { border-bottom: none; }
+    .prize-rank { color: var(--text-sub); }
+    .prize-val  { font-weight: 600; }
+    .detail-text { font-size: 0.82rem; color: #374151; line-height: 1.65; }
+    .detail-req  { font-size: 0.82rem; color: #374151; }
+    .detail-contact { font-size: 0.8rem; color: var(--text-sub); margin-top: 8px; }
+
+    /* Loading / Empty */
+    .loading, .empty {
+      text-align: center; padding: 48px 20px;
+      color: var(--text-sub); font-size: 0.95rem; line-height: 2;
+    }
+    .loading-spinner {
+      display: inline-block;
+      width: 28px; height: 28px;
+      border: 3px solid var(--primary-light);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin-bottom: 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Today banner */
+    .today-banner {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 520px) {
+      .header h1 { font-size: 1.35rem; }
+      .stat-num  { font-size: 1.6rem; }
+      .card { padding: 16px; }
+      .card-name { font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-icon">🎶</div>
+    <h1>합창대회 찾기</h1>
+    <p>동작소년소녀합창단이 참가할 수 있는 합창대회를 찾아드립니다</p>
+    <div class="choir-badge">🏫 동작소년소녀합창단 &nbsp;·&nbsp; 서울 동작구 &nbsp;·&nbsp; 초등·중학생</div>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-num" id="stat-open">—</div>
+      <div class="stat-label">지금 지원가능</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="stat-eligible">—</div>
+      <div class="stat-label">참가 가능 전체</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="stat-total">—</div>
+      <div class="stat-label">대회 수</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <button class="filter-btn active" id="btn-eligible" onclick="toggleEligible()">
+      ✅ 참가가능만
+    </button>
+    <select class="filter-select" id="sel-status" onchange="applyFilters()">
+      <option value="">전체 상태</option>
+      <option value="지원가능">지원가능</option>
+      <option value="마감임박">마감임박</option>
+      <option value="마감">마감</option>
+      <option value="종료">종료</option>
+    </select>
+    <select class="filter-select" id="sel-region" onchange="applyFilters()">
+      <option value="">전체 지역</option>
+      <option value="서울">서울</option>
+      <option value="경기도">경기도</option>
+      <option value="전국">전국</option>
+      <option value="국제">국제</option>
+    </select>
+  </div>
+
+  <div class="today-banner" id="today-banner"></div>
+  <div class="section-title" id="list-label"></div>
+
+  <!-- List -->
+  <div id="list">
+    <div class="loading">
+      <div class="loading-spinner"></div><br>대회 정보를 불러오는 중…
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API = '';   // same-origin
+let ALL  = [];
+let eligibleOnly = true;
+
+async function load() {
+  try {
+    const r = await fetch(`${API}/api/choir/competitions`);
+    const d = await r.json();
+    ALL = d.competitions;
+    document.getElementById('stat-eligible').textContent = d.eligible_count;
+    document.getElementById('stat-open').textContent     = d.now_open_count;
+    document.getElementById('stat-total').textContent    = d.total;
+    document.getElementById('today-banner').textContent  =
+      `기준일: ${d.as_of} · 총 ${d.total}개 대회`;
+    applyFilters();
+  } catch {
+    document.getElementById('list').innerHTML =
+      '<div class="empty">❌ 데이터를 불러올 수 없습니다.<br><small>잠시 후 다시 시도하세요.</small></div>';
+  }
+}
+
+function toggleEligible() {
+  eligibleOnly = !eligibleOnly;
+  document.getElementById('btn-eligible').classList.toggle('active', eligibleOnly);
+  applyFilters();
+}
+
+function applyFilters() {
+  const st  = document.getElementById('sel-status').value;
+  const reg = document.getElementById('sel-region').value;
+
+  let list = ALL;
+  if (eligibleOnly) list = list.filter(c => c.is_eligible);
+  if (st)  list = list.filter(c => c.deadline_status === st);
+  if (reg) list = list.filter(c =>
+    c.region === reg || c.region === '전국' || c.region === '국제'
+  );
+
+  document.getElementById('list-label').textContent =
+    `${list.length}개 대회${eligibleOnly ? ' (참가 가능)' : ''}`;
+
+  render(list);
+}
+
+/* ── Render ── */
+function render(list) {
+  const el = document.getElementById('list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty">🔍 조건에 맞는 대회가 없습니다.</div>';
+    return;
+  }
+  el.innerHTML = list.map((c, i) => cardHTML(c, i)).join('');
+}
+
+function statusCls(s) {
+  return { '지원가능': 'open', '마감임박': 'urgent', '마감': 'closed', '종료': 'ended' }[s] || 'closed';
+}
+
+function statusBadge(s) {
+  const cls = statusCls(s);
+  return `<span class="badge badge-${cls}">${s}</span>`;
+}
+
+function ddayHTML(c) {
+  if (c.deadline_status === '종료') return '<span class="dday done">종료</span>';
+  if (c.deadline_status === '마감') return '<span class="dday done">마감됨</span>';
+  const cls = c.days_until_deadline <= 14 ? 'urgent' : 'open';
+  return `<span class="dday ${cls}">D-${c.days_until_deadline}</span>`;
+}
+
+function cardHTML(c, i) {
+  const sc = statusCls(c.deadline_status);
+  const inelig = c.is_eligible ? '' : ' ineligible';
+
+  const prizeRows = Object.entries(c.prizes)
+    .map(([k, v]) => `<div class="prize-row"><span class="prize-rank">${k}</span><span class="prize-val">${v}</span></div>`)
+    .join('');
+
+  const notes = (c.eligibility_notes || [])
+    .map(n => `<li>${n}</li>`).join('');
+
+  const contact = c.contact
+    ? `<div class="detail-contact">📞 문의: ${c.contact}</div>` : '';
+
+  return `
+<div class="card ${sc}${inelig}" id="c${i}">
+  <div class="card-top">
+    <div class="card-name">${c.name}</div>
+    <div class="card-badges">
+      ${statusBadge(c.deadline_status)}
+      <span class="badge badge-score">매칭 ${c.match_score}점</span>
+    </div>
+  </div>
+  <div class="card-organizer">📋 ${c.organizer}</div>
+
+  <div class="deadline-row">
+    ${ddayHTML(c)}
+    <div class="deadline-detail">
+      신청마감 <strong>${c.application_deadline}</strong> &nbsp;|&nbsp;
+      대회일 <strong>${c.competition_date}</strong>
+    </div>
+  </div>
+
+  <div class="card-meta">
+    <span class="meta-item">📍 ${c.venue}</span>
+    <span class="meta-item">👥 ${c.eligible_age_groups.join(' · ')}</span>
+    <span class="meta-item">🗺 ${c.region}</span>
+  </div>
+
+  <div class="card-prize">🏆 ${c.prize_summary}</div>
+
+  <div class="elig-notes"><ul>${notes}</ul></div>
+
+  <button class="expand-btn" onclick="toggleDetail(${i})">▼ 상세 정보 보기</button>
+
+  <div class="card-detail" id="d${i}">
+    <div class="detail-section">
+      <h4>시상 내역</h4>
+      ${prizeRows}
+    </div>
+    <div class="detail-section">
+      <h4>대회 소개</h4>
+      <p class="detail-text">${c.description}</p>
+    </div>
+    <div class="detail-section">
+      <h4>참가 요건</h4>
+      <p class="detail-req">${c.requirements}</p>
+    </div>
+    ${contact}
+  </div>
+</div>`;
+}
+
+function toggleDetail(i) {
+  const d   = document.getElementById(`d${i}`);
+  const btn = d.previousElementSibling;
+  const open = d.style.display === 'block';
+  d.style.display = open ? 'none' : 'block';
+  btn.textContent = open ? '▼ 상세 정보 보기' : '▲ 접기';
+}
+
+load();
+</script>
+</body>
+</html>
