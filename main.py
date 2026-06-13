@@ -726,3 +726,436 @@ async def games_today_status():
     """네이버 스포츠 API 기반 오늘 경기 실시간 상태 조회 (5분 캐시)."""
     statuses = await fetch_naver_game_status()
     return {"date": date.today().isoformat(), "statuses": statuses}
+
+
+# ── 합창대회 찾기 서비스 ────────────────────────────────────────────
+
+DONGJAK_CHOIR_PROFILE: Dict[str, Any] = {
+    "name": "동작소년소녀합창단",
+    "description": "서울 동작구 소재 어린이·청소년 합창단",
+    "type": "소년소녀합창단",
+    "eligible_categories": ["소년소녀합창", "어린이합창", "청소년합창", "학생합창"],
+    "region": "서울",
+    "district": "동작구",
+    "age_groups": ["초등학생", "중학생"],
+}
+
+CHOIR_COMPETITIONS_DB: List[Dict[str, Any]] = [
+    {
+        "id": "CC001",
+        "name": "제30회 전국소년소녀합창경연대회",
+        "organizer": "사단법인 한국합창단연합회",
+        "categories": ["소년소녀합창", "어린이합창"],
+        "eligible_age_groups": ["초등학생", "중학생"],
+        "region": "전국",
+        "venue": "세종문화회관 대극장 (서울)",
+        "application_start": "2026-03-10",
+        "application_deadline": "2026-05-15",
+        "competition_date": "2026-07-12",
+        "prize_summary": "대상 교육부장관상 + 500만원",
+        "prizes": {
+            "대상 (1팀)": "교육부장관상 + 500만원",
+            "최우수상 (2팀)": "문화체육관광부장관상 + 300만원",
+            "우수상 (3팀)": "300만원",
+            "장려상 (5팀)": "100만원",
+        },
+        "description": (
+            "전국 소년소녀합창단이 참여하는 국내 최대 규모의 어린이·청소년 합창경연대회입니다. "
+            "초등학생 및 중학생으로 구성된 합창단이 참가 가능하며, 자유곡 및 지정곡 부문으로 나뉩니다."
+        ),
+        "requirements": "초등학생 또는 중학생 단원으로 구성된 합창단 (20인 이상 80인 이하)",
+        "notes": "신청 마감 완료 — 대회는 2026년 7월 12일 예정",
+        "tags": ["소년소녀", "어린이", "전국규모", "서울"],
+        "contact": "한국합창단연합회 사무국",
+    },
+    {
+        "id": "CC002",
+        "name": "서울시 합창경연대회 어린이부",
+        "organizer": "서울특별시 · 서울시합창연합회",
+        "categories": ["소년소녀합창", "어린이합창"],
+        "eligible_age_groups": ["초등학생", "중학생"],
+        "region": "서울",
+        "venue": "예술의전당 콘서트홀 (서울 서초구)",
+        "application_start": "2026-06-01",
+        "application_deadline": "2026-07-31",
+        "competition_date": "2026-09-13",
+        "prize_summary": "서울시장상 + 300만원",
+        "prizes": {
+            "대상 (1팀)": "서울시장상 + 300만원",
+            "최우수상 (2팀)": "서울시의회의장상 + 200만원",
+            "우수상 (3팀)": "서울시교육감상 + 150만원",
+            "장려상 (5팀)": "서울시합창연합회장상 + 50만원",
+        },
+        "description": (
+            "서울시민 합창문화 발전을 위해 매년 개최되는 서울시 공식 합창경연대회입니다. "
+            "어린이부는 서울시 소재 또는 서울시민으로 구성된 어린이 합창단이 참가 가능합니다. "
+            "동작구 소재 합창단으로서 참가 자격이 충분합니다."
+        ),
+        "requirements": "서울시 소재 또는 서울시민으로 구성된 어린이 합창단 (15인 이상)",
+        "notes": None,
+        "tags": ["서울", "어린이", "서울시장상", "지역대회"],
+        "contact": "서울시합창연합회",
+    },
+    {
+        "id": "CC003",
+        "name": "전국교육감기 학생합창경연대회",
+        "organizer": "전국시도교육감협의회 · 교육부",
+        "categories": ["학생합창", "어린이합창", "청소년합창"],
+        "eligible_age_groups": ["초등학생", "중학생", "고등학생"],
+        "region": "전국",
+        "venue": "국립합창단 공연장 (서울 서초구)",
+        "application_start": "2026-07-01",
+        "application_deadline": "2026-08-20",
+        "competition_date": "2026-10-17",
+        "prize_summary": "교육부장관상 + 500만원",
+        "prizes": {
+            "대상 (1팀)": "교육부장관상 + 500만원",
+            "금상 (3팀)": "전국시도교육감협의회장상 + 300만원",
+            "은상 (5팀)": "200만원",
+            "동상 (7팀)": "100만원",
+        },
+        "description": (
+            "교육부와 전국시도교육감협의회가 주최하는 학생 합창 경연대회입니다. "
+            "학교 소속이 아닌 지역 소년소녀합창단도 해당 지역 교육청 추천을 받아 참가 가능합니다. "
+            "서울시교육청을 통해 추천을 받으면 참가 자격이 생깁니다."
+        ),
+        "requirements": "초·중·고 학생 단원으로 구성된 합창단 (25인 이상), 교육청 추천 필요",
+        "notes": "서울시교육청 추천 공문 필요 — 사전에 서울시교육청 예술체육교육과에 문의 요망",
+        "tags": ["학생", "교육부", "전국규모", "교육청추천"],
+        "contact": "교육부 예술교육팀",
+    },
+    {
+        "id": "CC004",
+        "name": "대한합창연합회 전국합창경연대회 어린이·청소년부",
+        "organizer": "사단법인 대한합창연합회",
+        "categories": ["소년소녀합창", "어린이합창", "청소년합창"],
+        "eligible_age_groups": ["초등학생", "중학생", "고등학생"],
+        "region": "전국",
+        "venue": "성남아트센터 오페라하우스 (경기 성남)",
+        "application_start": "2026-05-01",
+        "application_deadline": "2026-06-30",
+        "competition_date": "2026-08-22",
+        "prize_summary": "대통령상 (종합대상) + 1,000만원",
+        "prizes": {
+            "대통령상 종합대상 (1팀)": "1,000만원",
+            "어린이·청소년부 대상 (1팀)": "문화체육관광부장관상 + 500만원",
+            "어린이·청소년부 최우수상 (2팀)": "300만원",
+            "어린이·청소년부 우수상 (3팀)": "200만원",
+            "장려상": "100만원",
+        },
+        "description": (
+            "국내 최권위 합창경연대회 중 하나로, 어린이·청소년부를 별도로 운영합니다. "
+            "소년소녀합창단, 학교합창단 등 어린이·청소년 합창단이라면 누구나 참가 가능합니다. "
+            "자유곡 2곡(한국 창작곡 1곡 포함) 연주 필수."
+        ),
+        "requirements": "초·중학생 단원으로 구성 (10인 이상), 학교 외 지역합창단 참가 가능",
+        "notes": "마감 17일 전 — 서둘러 지원 필요",
+        "tags": ["대통령상", "권위", "전국규모", "어린이청소년부"],
+        "contact": "사단법인 대한합창연합회",
+    },
+    {
+        "id": "CC005",
+        "name": "한국합창예술축제 어린이합창 부문",
+        "organizer": "국립합창단 · 문화체육관광부",
+        "categories": ["소년소녀합창", "어린이합창"],
+        "eligible_age_groups": ["초등학생", "중학생"],
+        "region": "전국",
+        "venue": "국립합창단 공연장 (서울 서초구)",
+        "application_start": "2026-08-01",
+        "application_deadline": "2026-09-15",
+        "competition_date": "2026-11-07",
+        "prize_summary": "문화체육관광부장관상 + 300만원",
+        "prizes": {
+            "대상 (1팀)": "문화체육관광부장관상 + 300만원",
+            "최우수상 (2팀)": "국립합창단장상 + 200만원",
+            "우수상 (3팀)": "100만원",
+            "참가상 (전팀)": "기념패",
+        },
+        "description": (
+            "국립합창단이 주관하는 합창예술 축제의 일환으로 진행되는 경연대회입니다. "
+            "경연 외에도 국립합창단 단원과의 합동 연습 및 교육 프로그램이 포함되어 있어 "
+            "단원들에게 귀한 성장 기회가 됩니다."
+        ),
+        "requirements": "초등학생·중학생으로 구성된 합창단 (15인 이상 60인 이하)",
+        "notes": None,
+        "tags": ["국립합창단", "교육프로그램", "어린이", "전국"],
+        "contact": "국립합창단 기획팀",
+    },
+    {
+        "id": "CC006",
+        "name": "World Choir Games 어린이합창 부문",
+        "organizer": "Interkultur Foundation",
+        "categories": ["어린이합창", "소년소녀합창"],
+        "eligible_age_groups": ["초등학생", "중학생"],
+        "region": "국제",
+        "venue": "미정 (격년 개최, 해외 도시)",
+        "application_start": "2026-01-01",
+        "application_deadline": "2026-03-31",
+        "competition_date": "2026-07-04",
+        "prize_summary": "금·은·동 메달 + 국제 인증서",
+        "prizes": {
+            "Gold Diploma": "95점 이상",
+            "Silver Diploma": "85~94점",
+            "Bronze Diploma": "75~84점",
+            "Participation Diploma": "74점 이하",
+        },
+        "description": (
+            "세계 최대 규모의 합창 올림픽으로 100개국 이상에서 합창단이 참가합니다. "
+            "어린이합창(Children's Choirs) 부문이 별도로 운영됩니다. "
+            "경쟁 부문과 비경쟁 부문(Festival) 중 선택 가능. "
+            "참가비 및 해외 여행 경비가 발생하므로 사전 예산 계획이 필수입니다."
+        ),
+        "requirements": "12세 이하(또는 중학생 이하) 단원으로 구성, 인원 제한 없음",
+        "notes": "신청 마감 완료 — 다음 회차(2028년) 일정 참고",
+        "tags": ["국제대회", "세계", "어린이", "해외참가"],
+        "contact": "Interkultur Foundation (독일)",
+    },
+    {
+        "id": "CC007",
+        "name": "경기도 합창경연대회 어린이·청소년부",
+        "organizer": "경기도 · 경기도합창연합회",
+        "categories": ["어린이합창", "청소년합창"],
+        "eligible_age_groups": ["초등학생", "중학생", "고등학생"],
+        "region": "경기도",
+        "venue": "경기아트센터 대극장 (경기 수원)",
+        "application_start": "2026-06-15",
+        "application_deadline": "2026-07-20",
+        "competition_date": "2026-09-05",
+        "prize_summary": "경기도지사상 + 300만원",
+        "prizes": {
+            "대상 (1팀)": "경기도지사상 + 300만원",
+            "최우수상 (2팀)": "경기도의회의장상 + 200만원",
+            "우수상 (3팀)": "경기도합창연합회장상 + 100만원",
+            "장려상 (5팀)": "50만원",
+        },
+        "description": (
+            "경기도 및 인근 수도권 합창단이 참가하는 지역 합창경연대회입니다. "
+            "서울 소재 합창단도 참가 자격이 있으며(거주지 제한 없음), "
+            "어린이·청소년부가 별도로 운영됩니다."
+        ),
+        "requirements": "초·중학생으로 구성된 합창단 (15인 이상), 지역 제한 없음",
+        "notes": "경기도 대회이나 서울 합창단도 참가 가능 — 참가 자격 사전 확인 권장",
+        "tags": ["경기도", "수도권", "어린이청소년", "지역대회"],
+        "contact": "경기도합창연합회",
+    },
+    {
+        "id": "CC008",
+        "name": "KBS 전국어린이합창제",
+        "organizer": "KBS한국방송 · KBS음악단",
+        "categories": ["어린이합창"],
+        "eligible_age_groups": ["초등학생"],
+        "region": "전국",
+        "venue": "KBS홀 (서울 여의도)",
+        "application_start": "2026-02-01",
+        "application_deadline": "2026-04-10",
+        "competition_date": "2026-05-05",
+        "prize_summary": "KBS 사장상 + 방송 출연 기회",
+        "prizes": {
+            "대상 (1팀)": "KBS 사장상 + 방송 출연 + 200만원",
+            "최우수상 (2팀)": "KBS음악단장상 + 150만원",
+            "우수상 (3팀)": "100만원",
+        },
+        "description": (
+            "KBS가 어린이날을 기념하여 개최하는 전국 어린이합창제입니다. "
+            "초등학생으로만 구성된 합창단이 참가하며, 수상팀은 KBS 방송 출연 기회가 주어집니다. "
+            "2026년 대회는 이미 종료되었으며, 2027년 대회를 준비하시기 바랍니다."
+        ),
+        "requirements": "초등학생 단원으로만 구성 (중학생 포함 불가), 20인 이상",
+        "notes": "초등학생 전용 — 중학생 단원이 있는 경우 참가 불가",
+        "tags": ["KBS", "방송출연", "어린이날", "초등학생전용"],
+        "contact": "KBS음악단",
+    },
+    {
+        "id": "CC009",
+        "name": "서울교육감기 학생합창경연대회",
+        "organizer": "서울특별시교육청",
+        "categories": ["학생합창", "어린이합창", "청소년합창"],
+        "eligible_age_groups": ["초등학생", "중학생", "고등학생"],
+        "region": "서울",
+        "venue": "세종문화회관 체임버홀 (서울 종로구)",
+        "application_start": "2026-07-15",
+        "application_deadline": "2026-08-31",
+        "competition_date": "2026-10-24",
+        "prize_summary": "서울시교육감상 + 200만원",
+        "prizes": {
+            "대상 (1팀)": "서울시교육감상 + 200만원",
+            "최우수상 (2팀)": "150만원",
+            "우수상 (3팀)": "100만원",
+            "장려상 (5팀)": "50만원",
+        },
+        "description": (
+            "서울시교육청이 주최하는 서울 학생 합창 경연대회입니다. "
+            "서울 소재 학교 합창단 뿐만 아니라 서울시교육청에 등록된 "
+            "청소년 합창단(지역 소년소녀합창단 포함)도 참가 가능합니다. "
+            "동작구 소재 합창단으로서 적극 추천하는 대회입니다."
+        ),
+        "requirements": "서울 소재 학교 또는 서울시교육청 등록 합창단, 초·중·고 학생 단원",
+        "notes": None,
+        "tags": ["서울", "교육청", "학생", "서울교육감상"],
+        "contact": "서울시교육청 예술체육교육과",
+    },
+    {
+        "id": "CC010",
+        "name": "한국합창지휘자협회 전국합창경연대회 어린이부",
+        "organizer": "한국합창지휘자협회",
+        "categories": ["소년소녀합창", "어린이합창", "청소년합창"],
+        "eligible_age_groups": ["초등학생", "중학생"],
+        "region": "전국",
+        "venue": "예술의전당 IBK챔버홀 (서울 서초구)",
+        "application_start": "2026-09-01",
+        "application_deadline": "2026-10-15",
+        "competition_date": "2026-11-28",
+        "prize_summary": "한국합창지휘자협회장상 + 300만원",
+        "prizes": {
+            "대상 (1팀)": "300만원",
+            "최우수상 (2팀)": "200만원",
+            "우수상 (3팀)": "100만원",
+            "장려상 (5팀)": "50만원",
+        },
+        "description": (
+            "한국합창지휘자협회가 주최하는 연말 합창경연대회입니다. "
+            "어린이부, 청소년부, 성인부로 나뉘어 진행되며, "
+            "전문 지휘자와 합창 전문가들로 구성된 심사위원단이 심사합니다."
+        ),
+        "requirements": "초·중학생으로 구성된 합창단 (12인 이상), 전국 어디서나 참가 가능",
+        "notes": None,
+        "tags": ["지휘자협회", "전국", "연말대회", "전문심사"],
+        "contact": "한국합창지휘자협회",
+    },
+]
+
+
+def _deadline_status(deadline_str: str, comp_date_str: str) -> str:
+    today = date.today()
+    deadline = date.fromisoformat(deadline_str)
+    comp_date = date.fromisoformat(comp_date_str)
+    if comp_date < today:
+        return "종료"
+    if deadline < today:
+        return "마감"
+    days_left = (deadline - today).days
+    if days_left <= 14:
+        return "마감임박"
+    return "지원가능"
+
+
+def _check_eligibility(comp: Dict[str, Any]) -> Dict[str, Any]:
+    profile_cats = set(DONGJAK_CHOIR_PROFILE["eligible_categories"])
+    profile_ages = set(DONGJAK_CHOIR_PROFILE["age_groups"])
+
+    cat_match = set(comp["categories"]) & profile_cats
+    age_match = set(comp["eligible_age_groups"]) & profile_ages
+
+    eligible = bool(cat_match) and bool(age_match)
+
+    notes: List[str] = []
+    if cat_match:
+        notes.append(f"참가 부문 적합 ({', '.join(sorted(cat_match))})")
+    else:
+        notes.append(f"참가 부문 불일치 (대회 부문: {', '.join(sorted(comp['categories']))})")
+
+    if age_match:
+        notes.append(f"연령대 적합 ({', '.join(sorted(age_match))})")
+    else:
+        notes.append(f"연령대 불일치 (대회 대상: {', '.join(sorted(comp['eligible_age_groups']))})")
+
+    region = comp["region"]
+    if region in ("전국", "국제"):
+        notes.append(f"지역 제한 없음 ({region})")
+        region_score = 20
+    elif region == "서울":
+        notes.append("서울 소재 대회 (동작구 포함)")
+        region_score = 20
+    elif region == "경기도":
+        notes.append("경기도 대회 — 서울 합창단 참가 가능 여부 사전 확인 권장")
+        region_score = 10
+    else:
+        notes.append(f"지역 제한 있음: {region}")
+        region_score = 0
+
+    if comp.get("notes"):
+        notes.append(f"참고: {comp['notes']}")
+
+    score = (40 if cat_match else 0) + (30 if age_match else 0) + region_score
+    d_status = _deadline_status(comp["application_deadline"], comp["competition_date"])
+    if d_status == "지원가능":
+        score += 10
+    elif d_status == "마감임박":
+        score += 5
+
+    return {
+        "is_eligible": eligible,
+        "eligibility_notes": notes,
+        "match_score": min(score, 100),
+        "deadline_status": d_status,
+        "days_until_deadline": max(
+            0, (date.fromisoformat(comp["application_deadline"]) - date.today()).days
+        ),
+    }
+
+
+@app.get("/api/choir/profile")
+def get_choir_profile():
+    """동작소년소녀합창단 프로필 조회."""
+    return DONGJAK_CHOIR_PROFILE
+
+
+@app.get("/api/choir/competitions")
+def list_choir_competitions(
+    eligible_only: bool = False,
+    region: Optional[str] = None,
+    category: Optional[str] = None,
+    status: Optional[str] = None,
+):
+    """합창대회 목록 조회.
+
+    - eligible_only=true: 동작소년소녀합창단 참가 가능 대회만 반환
+    - region: 서울 | 경기도 | 전국 | 국제
+    - category: 소년소녀합창 | 어린이합창 | 청소년합창 | 학생합창
+    - status: 지원가능 | 마감임박 | 마감 | 종료
+    """
+    STATUS_ORDER = {"지원가능": 0, "마감임박": 1, "마감": 2, "종료": 3}
+    results = []
+
+    for comp in CHOIR_COMPETITIONS_DB:
+        elig = _check_eligibility(comp)
+
+        if eligible_only and not elig["is_eligible"]:
+            continue
+        if region and comp["region"] not in (region, "전국", "국제"):
+            continue
+        if category and not any(category in c for c in comp["categories"]):
+            continue
+        if status and elig["deadline_status"] != status:
+            continue
+
+        results.append({**comp, **elig})
+
+    results.sort(key=lambda x: (
+        0 if x["is_eligible"] else 1,
+        STATUS_ORDER.get(x["deadline_status"], 9),
+        x["application_deadline"],
+    ))
+
+    eligible_count = sum(1 for r in results if r["is_eligible"])
+    now_open = sum(
+        1 for r in results
+        if r["is_eligible"] and r["deadline_status"] in ("지원가능", "마감임박")
+    )
+    return {
+        "choir": DONGJAK_CHOIR_PROFILE["name"],
+        "as_of": date.today().isoformat(),
+        "total": len(results),
+        "eligible_count": eligible_count,
+        "now_open_count": now_open,
+        "competitions": results,
+    }
+
+
+@app.get("/api/choir/competitions/{competition_id}")
+def get_choir_competition(competition_id: str):
+    """특정 합창대회 상세 정보 + 동작소년소녀합창단 참가 적합 여부."""
+    comp = next((c for c in CHOIR_COMPETITIONS_DB if c["id"] == competition_id), None)
+    if not comp:
+        raise HTTPException(404, f"대회 ID '{competition_id}'를 찾을 수 없습니다.")
+    return {**comp, **_check_eligibility(comp)}
