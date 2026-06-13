@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>합창대회 찾기 — 동작소년소녀합창단</title>
+  <style>
+    :root {
+      --primary: #7c3aed;
+      --primary-dark: #5b21b6;
+      --primary-light: #ede9fe;
+      --success: #059669;
+      --success-light: #d1fae5;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --gray: #6b7280;
+      --gray-light: #f3f4f6;
+      --text: #111827;
+      --text-sub: #6b7280;
+      --border: #e5e7eb;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.05);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+      background: #f5f3ff;
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);
+      color: white;
+      padding: 28px 20px 32px;
+    }
+    .header-inner { max-width: 740px; margin: 0 auto; }
+    .header-icon { font-size: 2.4rem; margin-bottom: 8px; }
+    .header h1 { font-size: 1.65rem; font-weight: 800; margin-bottom: 6px; }
+    .header p { font-size: 0.9rem; opacity: 0.85; margin-bottom: 14px; }
+    .choir-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.82rem;
+    }
+
+    .main { max-width: 740px; margin: 0 auto; padding: 20px 16px; }
+
+    .stats-bar {
+      background: white;
+      border-radius: 14px;
+      padding: 18px 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+    }
+    .stat { flex: 1; text-align: center; padding: 0 8px; border-right: 1px solid var(--border); }
+    .stat:last-child { border-right: none; }
+    .stat-num { font-size: 2rem; font-weight: 800; color: var(--primary); line-height: 1.1; }
+    .stat-label { font-size: 0.75rem; color: var(--text-sub); margin-top: 2px; }
+
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+    .filter-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: white; border: 2px solid var(--border);
+      border-radius: 10px; padding: 8px 14px;
+      font-size: 0.84rem; cursor: pointer; color: var(--text);
+      transition: all .15s; font-family: inherit;
+    }
+    .filter-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); font-weight: 600; }
+    .filter-select {
+      background: white; border: 2px solid var(--border);
+      border-radius: 10px; padding: 8px 14px;
+      font-size: 0.84rem; cursor: pointer; color: var(--text);
+      outline: none; font-family: inherit; transition: border-color .15s;
+    }
+    .filter-select:focus { border-color: var(--primary); }
+
+    .section-title { font-size: 0.8rem; font-weight: 600; color: var(--text-sub); margin-bottom: 10px; }
+    .today-banner { text-align: center; font-size: 0.78rem; color: var(--text-sub); margin-bottom: 14px; }
+
+    .card {
+      background: white; border-radius: 16px; padding: 20px; margin-bottom: 12px;
+      box-shadow: var(--shadow); border-left: 4px solid transparent;
+      transition: box-shadow .15s, transform .1s;
+    }
+    .card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.10); transform: translateY(-1px); }
+    .card.open   { border-left-color: var(--success); }
+    .card.urgent { border-left-color: var(--danger); }
+    .card.closed { border-left-color: #d1d5db; }
+    .card.ended  { border-left-color: #e5e7eb; opacity: 0.55; }
+    .card.ineligible { opacity: 0.5; }
+
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+    .card-name { font-size: 1rem; font-weight: 700; flex: 1; }
+    .card-badges { display: flex; gap: 5px; flex-shrink: 0; flex-wrap: wrap; }
+
+    .badge { display: inline-block; border-radius: 6px; padding: 3px 8px; font-size: 0.73rem; font-weight: 700; white-space: nowrap; }
+    .badge-open   { background: var(--success-light); color: var(--success); }
+    .badge-urgent { background: var(--danger-light);  color: var(--danger);  }
+    .badge-closed { background: var(--gray-light);    color: var(--gray);    }
+    .badge-ended  { background: var(--gray-light);    color: #9ca3af;        }
+    .badge-score  { background: var(--primary-light); color: var(--primary); }
+
+    .card-organizer { font-size: 0.82rem; color: var(--text-sub); margin-bottom: 10px; }
+
+    .deadline-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .dday { font-size: 1.4rem; font-weight: 800; line-height: 1; }
+    .dday.open   { color: var(--success); }
+    .dday.urgent { color: var(--danger);  }
+    .dday.done   { color: #9ca3af;        }
+    .deadline-detail { font-size: 0.8rem; color: var(--text-sub); }
+
+    .card-meta { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.81rem; color: var(--text-sub); margin-bottom: 8px; }
+    .card-prize { font-size: 0.9rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 12px; }
+
+    .elig-notes { background: #f8fafc; border-radius: 8px; padding: 10px 12px; font-size: 0.79rem; color: var(--text-sub); }
+    .elig-notes ul { list-style: none; }
+    .elig-notes li { padding: 1px 0; }
+    .elig-notes li::before { content: '• '; color: var(--primary); }
+
+    .expand-btn {
+      background: none; border: none; font-size: 0.8rem;
+      color: var(--primary); cursor: pointer; margin-top: 10px;
+      padding: 0; font-family: inherit;
+    }
+    .expand-btn:hover { text-decoration: underline; }
+
+    .card-detail { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: none; }
+    .detail-section { margin-bottom: 12px; }
+    .detail-section h4 { font-size: 0.78rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+    .prize-row { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 3px 0; border-bottom: 1px solid #f3f4f6; }
+    .prize-row:last-child { border-bottom: none; }
+    .prize-rank { color: var(--text-sub); }
+    .prize-val  { font-weight: 600; }
+    .detail-text { font-size: 0.82rem; color: #374151; line-height: 1.65; }
+    .detail-req  { font-size: 0.82rem; color: #374151; }
+    .detail-contact { font-size: 0.8rem; color: var(--text-sub); margin-top: 8px; }
+
+    .empty { text-align: center; padding: 48px 20px; color: var(--text-sub); font-size: 0.95rem; line-height: 2; }
+
+    @media (max-width: 520px) {
+      .header h1 { font-size: 1.35rem; }
+      .stat-num  { font-size: 1.6rem; }
+      .card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-icon">🎶</div>
+    <h1>합창대회 찾기</h1>
+    <p>동작소년소녀합창단이 참가할 수 있는 합창대회를 찾아드립니다</p>
+    <div class="choir-badge">🏫 동작소년소녀합창단 &nbsp;·&nbsp; 서울 동작구 &nbsp;·&nbsp; 초등·중학생</div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num" id="stat-open">—</div><div class="stat-label">지금 지원가능</div></div>
+    <div class="stat"><div class="stat-num" id="stat-eligible">—</div><div class="stat-label">참가 가능 전체</div></div>
+    <div class="stat"><div class="stat-num" id="stat-total">—</div><div class="stat-label">대회 수</div></div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" id="btn-eligible" onclick="toggleEligible()">✅ 참가가능만</button>
+    <select class="filter-select" id="sel-status" onchange="applyFilters()">
+      <option value="">전체 상태</option>
+      <option value="지원가능">지원가능</option>
+      <option value="마감임박">마감임박</option>
+      <option value="마감">마감</option>
+      <option value="종료">종료</option>
+    </select>
+    <select class="filter-select" id="sel-region" onchange="applyFilters()">
+      <option value="">전체 지역</option>
+      <option value="서울">서울</option>
+      <option value="경기도">경기도</option>
+      <option value="전국">전국</option>
+      <option value="국제">국제</option>
+    </select>
+  </div>
+
+  <div class="today-banner" id="today-banner"></div>
+  <div class="section-title" id="list-label"></div>
+  <div id="list"></div>
+</main>
+
+<script>
+// ── 데이터 (2026-06-13 기준) ──────────────────────────────────────
+
+const TODAY = '2026-06-13';
+
+const COMPETITIONS = [
+  {
+    id:'CC001', name:'제30회 전국소년소녀합창경연대회',
+    organizer:'사단법인 한국합창단연합회',
+    categories:['소년소녀합창','어린이합창'],
+    eligible_age_groups:['초등학생','중학생'],
+    region:'전국', venue:'세종문화회관 대극장 (서울)',
+    application_deadline:'2026-05-15', competition_date:'2026-07-12',
+    prize_summary:'대상 교육부장관상 + 500만원',
+    prizes:{'대상 (1팀)':'교육부장관상 + 500만원','최우수상 (2팀)':'문화체육관광부장관상 + 300만원','우수상 (3팀)':'300만원','장려상 (5팀)':'100만원'},
+    description:'전국 소년소녀합창단이 참여하는 국내 최대 규모의 어린이·청소년 합창경연대회입니다. 초등학생 및 중학생으로 구성된 합창단이 참가 가능하며, 자유곡 및 지정곡 부문으로 나뉩니다.',
+    requirements:'초등학생 또는 중학생 단원으로 구성된 합창단 (20인 이상 80인 이하)',
+    eligibility_notes:['참가 부문 적합 (소년소녀합창, 어린이합창)','연령대 적합 (중학생, 초등학생)','지역 제한 없음 (전국)','참고: 신청 마감 완료 — 대회는 2026년 7월 12일 예정'],
+    is_eligible:true, match_score:90, contact:'한국합창단연합회 사무국',
+  },
+  {
+    id:'CC002', name:'서울시 합창경연대회 어린이부',
+    organizer:'서울특별시 · 서울시합창연합회',
+    categories:['소년소녀합창','어린이합창'],
+    eligible_age_groups:['초등학생','중학생'],
+    region:'서울', venue:'예술의전당 콘서트홀 (서울 서초구)',
+    application_deadline:'2026-07-31', competition_date:'2026-09-13',
+    prize_summary:'서울시장상 + 300만원',
+    prizes:{'대상 (1팀)':'서울시장상 + 300만원','최우수상 (2팀)':'서울시의회의장상 + 200만원','우수상 (3팀)':'서울시교육감상 + 150만원','장려상 (5팀)':'서울시합창연합회장상 + 50만원'},
+    description:'서울시민 합창문화 발전을 위해 매년 개최되는 서울시 공식 합창경연대회입니다. 어린이부는 서울시 소재 또는 서울시민으로 구성된 어린이 합창단이 참가 가능합니다. 동작구 소재 합창단으로서 참가 자격이 충분합니다.',
+    requirements:'서울시 소재 또는 서울시민으로 구성된 어린이 합창단 (15인 이상)',
+    eligibility_notes:['참가 부문 적합 (소년소녀합창, 어린이합창)','연령대 적합 (중학생, 초등학생)','서울 소재 대회 (동작구 포함)'],
+    is_eligible:true, match_score:100, contact:'서울시합창연합회',
+  },
+  {
+    id:'CC003', name:'전국교육감기 학생합창경연대회',
+    organizer:'전국시도교육감협의회 · 교육부',
+    categories:['학생합창','어린이합창','청소년합창'],
+    eligible_age_groups:['초등학생','중학생','고등학생'],
+    region:'전국', venue:'국립합창단 공연장 (서울 서초구)',
+    application_deadline:'2026-08-20', competition_date:'2026-10-17',
+    prize_summary:'교육부장관상 + 500만원',
+    prizes:{'대상 (1팀)':'교육부장관상 + 500만원','금상 (3팀)':'전국시도교육감협의회장상 + 300만원','은상 (5팀)':'200만원','동상 (7팀)':'100만원'},
+    description:'교육부와 전국시도교육감협의회가 주최하는 학생 합창 경연대회입니다. 학교 소속이 아닌 지역 소년소녀합창단도 해당 지역 교육청 추천을 받아 참가 가능합니다. 서울시교육청을 통해 추천을 받으면 참가 자격이 생깁니다.',
+    requirements:'초·중·고 학생 단원으로 구성된 합창단 (25인 이상), 교육청 추천 필요',
+    eligibility_notes:['참가 부문 적합 (학생합창, 어린이합창, 청소년합창)','연령대 적합 (중학생, 초등학생)','지역 제한 없음 (전국)','참고: 서울시교육청 추천 공문 필요 — 사전에 서울시교육청 예술체육교육과에 문의 요망'],
+    is_eligible:true, match_score:100, contact:'교육부 예술교육팀',
+  },
+  {
+    id:'CC004', name:'대한합창연합회 전국합창경연대회 어린이·청소년부',
+    organizer:'사단법인 대한합창연합회',
+    categories:['소년소녀합창','어린이합창','청소년합창'],
+    eligible_age_groups:['초등학생','중학생','고등학생'],
+    region:'전국', venue:'성남아트센터 오페라하우스 (경기 성남)',
+    application_deadline:'2026-06-30', competition_date:'2026-08-22',
+    prize_summary:'대통령상 (종합대상) + 1,000만원',
+    prizes:{'대통령상 종합대상 (1팀)':'1,000만원','어린이·청소년부 대상 (1팀)':'문화체육관광부장관상 + 500만원','어린이·청소년부 최우수상 (2팀)':'300만원','어린이·청소년부 우수상 (3팀)':'200만원','장려상':'100만원'},
+    description:'국내 최권위 합창경연대회 중 하나로, 어린이·청소년부를 별도로 운영합니다. 소년소녀합창단, 학교합창단 등 어린이·청소년 합창단이라면 누구나 참가 가능합니다. 자유곡 2곡(한국 창작곡 1곡 포함) 연주 필수.',
+    requirements:'초·중학생 단원으로 구성 (10인 이상), 학교 외 지역합창단 참가 가능',
+    eligibility_notes:['참가 부문 적합 (소년소녀합창, 어린이합창, 청소년합창)','연령대 적합 (중학생, 초등학생)','지역 제한 없음 (전국)','참고: 마감 17일 전 — 서둘러 지원 필요'],
+    is_eligible:true, match_score:100, contact:'사단법인 대한합창연합회',
+  },
+  {
+    id:'CC005', name:'한국합창예술축제 어린이합창 부문',
+    organizer:'국립합창단 · 문화체육관광부',
+    categories:['소년소녀합창','어린이합창'],
+    eligible_age_groups:['초등학생','중학생'],
+    region:'전국', venue:'국립합창단 공연장 (서울 서초구)',
+    application_deadline:'2026-09-15', competition_date:'2026-11-07',
+    prize_summary:'문화체육관광부장관상 + 300만원',
+    prizes:{'대상 (1팀)':'문화체육관광부장관상 + 300만원','최우수상 (2팀)':'국립합창단장상 + 200만원','우수상 (3팀)':'100만원','참가상 (전팀)':'기념패'},
+    description:'국립합창단이 주관하는 합창예술 축제의 일환으로 진행되는 경연대회입니다. 경연 외에도 국립합창단 단원과의 합동 연습 및 교육 프로그램이 포함되어 있어 단원들에게 귀한 성장 기회가 됩니다.',
+    requirements:'초등학생·중학생으로 구성된 합창단 (15인 이상 60인 이하)',
+    eligibility_notes:['참가 부문 적합 (소년소녀합창, 어린이합창)','연령대 적합 (중학생, 초등학생)','지역 제한 없음 (전국)'],
+    is_eligible:true, match_score:100, contact:'국립합창단 기획팀',
+  },
+  {
+    id:'CC006', name:'World Choir Games 어린이합창 부문',
+    organizer:'Interkultur Foundation',
+    categories:['어린이합창','소년소녀합창'],
+    eligible_age_groups:['초등학생','중학생'],
+    region:'국제', venue:'미정 (격년 개최, 해외 도시)',
+    application_deadline:'2026-03-31', competition_date:'2026-07-04',
+    prize_summary:'금·은·동 메달 + 국제 인증서',
+    prizes:{'Gold Diploma':'95점 이상','Silver Diploma':'85~94점','Bronze Diploma':'75~84점','Participation Diploma':'74점 이하'},
+    description:'세계 최대 규모의 합창 올림픽으로 100개국 이상에서 합창단이 참가합니다. 어린이합창(Children\'s Choirs) 부문이 별도로 운영됩니다. 경쟁 부문과 비경쟁 부문(Festival) 중 선택 가능. 참가비 및 해외 여행 경비가 발생하므로 사전 예산 계획이 필수입니다.',
+    requirements:'12세 이하(또는 중학생 이하) 단원으로 구성, 인원 제한 없음',
+    eligibility_notes:['참가 부문 적합 (어린이합창, 소년소녀합창)','연령대 적합 (중학생, 초등학생)','지역 제한 없음 (국제)','참고: 신청 마감 완료 — 다음 회차(2028년) 일정 참고'],
+    is_eligible:true, match_score:90, contact:'Interkultur Foundation (독일)',
+  },
+  {
+    id:'CC007', name:'경기도 합창경연대회 어린이·청소년부',
+    organizer:'경기도 · 경기도합창연합회',
+    categories:['어린이합창','청소년합창'],
+    eligible_age_groups:['초등학생','중학생','고등학생'],
+    region:'경기도', venue:'경기아트센터 대극장 (경기 수원)',
+    application_deadline:'2026-07-20', competition_date:'2026-09-05',
+    prize_summary:'경기도지사상 + 300만원',
+    prizes:{'대상 (1팀)':'경기도지사상 + 300만원','최우수상 (2팀)':'경기도의회의장상 + 200만원','우수상 (3팀)':'경기도합창연합회장상 + 100만원','장려상 (5팀)':'50만원'},
+    description:'경기도 및 인근 수도권 합창단이 참가하는 지역 합창경연대회입니다. 서울 소재 합창단도 참가 자격이 있으며(거주지 제한 없음), 어린이·청소년부가 별도로 운영됩니다.',
+    requirements:'초·중학생으로 구성된 합창단 (15인 이상), 지역 제한 없음',
+    eligibility_notes:['참가 부문 적합 (어린이합창, 청소년합창)','연령대 적합 (중학생, 초등학생)','경기도 대회 — 서울 합창단 참가 가능 여부 사전 확인 권장'],
+    is_eligible:true, match_score:90, contact:'경기도합창연합회',
+  },
+  {
+    id:'CC008', name:'KBS 전국어린이합창제',
+    organizer:'KBS한국방송 · KBS음악단',
+    categories:['어린이합창'],
+    eligible_age_groups:['초등학생'],
+    region:'전국', venue:'KBS홀 (서울 여의도)',
+    application_deadline:'2026-04-10', competition_date:'2026-05-05',
+    prize_summary:'KBS 사장상 + 방송 출연 기회',
+    prizes:{'대상 (1팀)':'KBS 사장상 + 방송 출연 + 200만원','최우수상 (2팀)':'KBS음악단장상 + 150만원','우수상 (3팀)':'100만원'},
+    description:'KBS가 어린이날을 기념하여 개최하는 전국 어린이합창제입니다. 초등학생으로만 구성된 합창단이 참가하며, 수상팀은 KBS 방송 출연 기회가 주어집니다. 2026년 대회는 이미 종료되었으며, 2027년 대회를 준비하시기 바랍니다.',
+    requirements:'초등학생 단원으로만 구성 (중학생 포함 불가), 20인 이상',
+    eligibility_notes:['참가 부문 적합 (어린이합창)','연령대 적합 (초등학생)','지역 제한 없음 (전국)','참고: 초등학생 전용 — 중학생 단원이 있는 경우 참가 불가'],
+    is_eligible:true, match_score:90, contact:'KBS음악단',
+  },
+  {
+    id:'CC009', name:'서울교육감기 학생합창경연대회',
+    organizer:'서울특별시교육청',
+    categories:['학생합창','어린이합창','청소년합창'],
+    eligible_age_groups:['초등학생','중학생','고등학생'],
+    region:'서울', venue:'세종문화회관 체임버홀 (서울 종로구)',
+    application_deadline:'2026-08-31', competition_date:'2026-10-24',
+    prize_summary:'서울시교육감상 + 200만원',
+    prizes:{'대상 (1팀)':'서울시교육감상 + 200만원','최우수상 (2팀)':'150만원','우수상 (3팀)':'100만원','장려상 (5팀)':'50만원'},
+    description:'서울시교육청이 주최하는 서울 학생 합창 경연대회입니다. 서울 소재 학교 합창단 뿐만 아니라 서울시교육청에 등록된 청소년 합창단(지역 소년소녀합창단 포함)도 참가 가능합니다. 동작구 소재 합창단으로서 적극 추천하는 대회입니다.',
+    requirements:'서울 소재 학교 또는 서울시교육청 등록 합창단, 초·중·고 학생 단원',
+    eligibility_notes:['참가 부문 적합 (학생합창, 어린이합창, 청소년합창)','연령대 적합 (중학생, 초등학생)','서울 소재 대회 (동작구 포함)'],
+    is_eligible:true, match_score:100, contact:'서울시교육청 예술체육교육과',
+  },
+  {
+    id:'CC010', name:'한국합창지휘자협회 전국합창경연대회 어린이부',
+    organizer:'한국합창지휘자협회',
+    categories:['소년소녀합창','어린이합창','청소년합창'],
+    eligible_age_groups:['초등학생','중학생'],
+    region:'전국', venue:'예술의전당 IBK챔버홀 (서울 서초구)',
+    application_deadline:'2026-10-15', competition_date:'2026-11-28',
+    prize_summary:'한국합창지휘자협회장상 + 300만원',
+    prizes:{'대상 (1팀)':'300만원','최우수상 (2팀)':'200만원','우수상 (3팀)':'100만원','장려상 (5팀)':'50만원'},
+    description:'한국합창지휘자협회가 주최하는 연말 합창경연대회입니다. 어린이부, 청소년부, 성인부로 나뉘어 진행되며, 전문 지휘자와 합창 전문가들로 구성된 심사위원단이 심사합니다.',
+    requirements:'초·중학생으로 구성된 합창단 (12인 이상), 전국 어디서나 참가 가능',
+    eligibility_notes:['참가 부문 적합 (소년소녀합창, 어린이합창, 청소년합창)','연령대 적합 (중학생, 초등학생)','지역 제한 없음 (전국)'],
+    is_eligible:true, match_score:100, contact:'한국합창지휘자협회',
+  },
+];
+
+// ── 마감 상태 계산 ────────────────────────────────────────────────
+
+function calcStatus(comp) {
+  const today    = new Date(TODAY);
+  const deadline = new Date(comp.application_deadline);
+  const compDate = new Date(comp.competition_date);
+  if (compDate < today)    return { status:'종료',   days:0 };
+  if (deadline < today)    return { status:'마감',   days:0 };
+  const days = Math.round((deadline - today) / 86400000);
+  if (days <= 14)          return { status:'마감임박', days };
+  return                          { status:'지원가능', days };
+}
+
+function enrichAll() {
+  return COMPETITIONS.map(c => {
+    const { status, days } = calcStatus(c);
+    return { ...c, deadline_status: status, days_until_deadline: days };
+  });
+}
+
+// ── 앱 상태 ──────────────────────────────────────────────────────
+
+let ALL = enrichAll();
+let eligibleOnly = true;
+
+function initStats() {
+  const total    = ALL.length;
+  const eligible = ALL.filter(c => c.is_eligible).length;
+  const open     = ALL.filter(c => c.is_eligible && ['지원가능','마감임박'].includes(c.deadline_status)).length;
+  document.getElementById('stat-total').textContent    = total;
+  document.getElementById('stat-eligible').textContent = eligible;
+  document.getElementById('stat-open').textContent     = open;
+  document.getElementById('today-banner').textContent  = `기준일: ${TODAY} · 총 ${total}개 대회`;
+}
+
+function toggleEligible() {
+  eligibleOnly = !eligibleOnly;
+  document.getElementById('btn-eligible').classList.toggle('active', eligibleOnly);
+  applyFilters();
+}
+
+function applyFilters() {
+  const st  = document.getElementById('sel-status').value;
+  const reg = document.getElementById('sel-region').value;
+  const STATUS_ORDER = { '지원가능':0, '마감임박':1, '마감':2, '종료':3 };
+
+  let list = ALL;
+  if (eligibleOnly) list = list.filter(c => c.is_eligible);
+  if (st)  list = list.filter(c => c.deadline_status === st);
+  if (reg) list = list.filter(c => c.region === reg || c.region === '전국' || c.region === '국제');
+
+  list = [...list].sort((a, b) => {
+    if (a.is_eligible !== b.is_eligible) return a.is_eligible ? -1 : 1;
+    const sd = STATUS_ORDER[a.deadline_status] - STATUS_ORDER[b.deadline_status];
+    if (sd !== 0) return sd;
+    return a.application_deadline.localeCompare(b.application_deadline);
+  });
+
+  document.getElementById('list-label').textContent =
+    `${list.length}개 대회${eligibleOnly ? ' (참가 가능)' : ''}`;
+  render(list);
+}
+
+// ── 렌더링 ────────────────────────────────────────────────────────
+
+function statusCls(s) {
+  return { '지원가능':'open','마감임박':'urgent','마감':'closed','종료':'ended' }[s] || 'closed';
+}
+function statusBadge(s) {
+  return `<span class="badge badge-${statusCls(s)}">${s}</span>`;
+}
+function ddayHTML(c) {
+  if (c.deadline_status === '종료') return '<span class="dday done">종료</span>';
+  if (c.deadline_status === '마감') return '<span class="dday done">마감됨</span>';
+  const cls = c.days_until_deadline <= 14 ? 'urgent' : 'open';
+  return `<span class="dday ${cls}">D-${c.days_until_deadline}</span>`;
+}
+
+function cardHTML(c, i) {
+  const sc = statusCls(c.deadline_status);
+  const inelig = c.is_eligible ? '' : ' ineligible';
+  const prizeRows = Object.entries(c.prizes)
+    .map(([k,v]) => `<div class="prize-row"><span class="prize-rank">${k}</span><span class="prize-val">${v}</span></div>`)
+    .join('');
+  const notes = (c.eligibility_notes||[]).map(n=>`<li>${n}</li>`).join('');
+  const contact = c.contact ? `<div class="detail-contact">📞 문의: ${c.contact}</div>` : '';
+
+  return `
+<div class="card ${sc}${inelig}" id="c${i}">
+  <div class="card-top">
+    <div class="card-name">${c.name}</div>
+    <div class="card-badges">
+      ${statusBadge(c.deadline_status)}
+      <span class="badge badge-score">매칭 ${c.match_score}점</span>
+    </div>
+  </div>
+  <div class="card-organizer">📋 ${c.organizer}</div>
+  <div class="deadline-row">
+    ${ddayHTML(c)}
+    <div class="deadline-detail">신청마감 <strong>${c.application_deadline}</strong> &nbsp;|&nbsp; 대회일 <strong>${c.competition_date}</strong></div>
+  </div>
+  <div class="card-meta">
+    <span>📍 ${c.venue}</span>
+    <span>👥 ${c.eligible_age_groups.join(' · ')}</span>
+    <span>🗺 ${c.region}</span>
+  </div>
+  <div class="card-prize">🏆 ${c.prize_summary}</div>
+  <div class="elig-notes"><ul>${notes}</ul></div>
+  <button class="expand-btn" onclick="toggleDetail(${i})">▼ 상세 정보 보기</button>
+  <div class="card-detail" id="d${i}">
+    <div class="detail-section"><h4>시상 내역</h4>${prizeRows}</div>
+    <div class="detail-section"><h4>대회 소개</h4><p class="detail-text">${c.description}</p></div>
+    <div class="detail-section"><h4>참가 요건</h4><p class="detail-req">${c.requirements}</p></div>
+    ${contact}
+  </div>
+</div>`;
+}
+
+function render(list) {
+  const el = document.getElementById('list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty">🔍 조건에 맞는 대회가 없습니다.</div>';
+    return;
+  }
+  el.innerHTML = list.map((c,i) => cardHTML(c,i)).join('');
+}
+
+function toggleDetail(i) {
+  const d = document.getElementById(`d${i}`);
+  const btn = d.previousElementSibling;
+  const open = d.style.display === 'block';
+  d.style.display = open ? 'none' : 'block';
+  btn.textContent = open ? '▼ 상세 정보 보기' : '▲ 접기';
+}
+
+// ── 초기화 ────────────────────────────────────────────────────────
+initStats();
+applyFilters();
+</script>
+</body>
+</html>
