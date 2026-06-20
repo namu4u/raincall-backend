@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>제주 여행 일정 2026</title>
+  <title>경희대 경영학과 동문 제주 여행 2026</title>
   <style>
     :root {
-      --primary: #0077B6;
-      --secondary: #00B4D8;
-      --accent: #FF6B6B;
+      --primary: #1C3F7A;
+      --secondary: #2A5BA8;
+      --gold: #C9A84C;
+      --gold-light: #E8C96A;
+      --accent: #C9A84C;
       --teal: #2EC4B6;
-      --dark: #023E8A;
-      --light: #F0F7FF;
+      --dark: #0D2147;
+      --light: #F5F3EE;
       --text: #1A1A2E;
       --muted: #6B7280;
       --border: #E5E7EB;
@@ -21,7 +23,7 @@
 
     body {
       font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-      background: linear-gradient(160deg, #023E8A 0%, #0077B6 50%, #00B4D8 100%);
+      background: linear-gradient(160deg, #0D2147 0%, #1C3F7A 55%, #2A5BA8 100%);
       min-height: 100vh;
       color: var(--text);
     }
@@ -29,38 +31,79 @@
     /* ── Header ── */
     .header {
       text-align: center;
-      padding: 48px 20px 24px;
+      padding: 44px 20px 20px;
       color: white;
     }
-    .header-emoji { font-size: 3rem; display: block; margin-bottom: 10px; }
+
+    .khu-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(201,168,76,0.18);
+      border: 1.5px solid rgba(201,168,76,0.55);
+      color: var(--gold-light);
+      padding: 6px 18px;
+      border-radius: 50px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin-bottom: 16px;
+      backdrop-filter: blur(6px);
+    }
+    .khu-badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--gold-light);
+    }
+
     .header h1 {
-      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-size: clamp(1.7rem, 5vw, 2.6rem);
       font-weight: 900;
       letter-spacing: -0.02em;
-      text-shadow: 0 2px 16px rgba(0,0,0,0.3);
+      text-shadow: 0 2px 16px rgba(0,0,0,0.4);
+      line-height: 1.2;
     }
+    .header h1 .gold { color: var(--gold-light); }
+
     .header-sub {
-      font-size: 1rem;
-      opacity: 0.85;
-      margin-top: 8px;
+      font-size: 0.97rem;
+      opacity: 0.8;
+      margin-top: 10px;
       font-weight: 400;
     }
+    .header-sub em {
+      font-style: normal;
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+
+    .header-divider {
+      width: 48px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 16px auto;
+    }
+
     .header-dates {
       display: inline-flex;
       gap: 10px;
-      margin-top: 16px;
+      margin-top: 4px;
       flex-wrap: wrap;
       justify-content: center;
     }
     .header-date-chip {
-      background: rgba(255,255,255,0.2);
-      border: 1px solid rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.3);
       color: white;
       padding: 6px 16px;
       border-radius: 50px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
       backdrop-filter: blur(6px);
+    }
+    .header-date-chip.gold-chip {
+      background: rgba(201,168,76,0.2);
+      border-color: rgba(201,168,76,0.5);
+      color: var(--gold-light);
     }
 
     /* ── Layout ── */
@@ -99,7 +142,7 @@
       background: white;
       color: var(--primary);
       border-color: white;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.25);
     }
 
     /* ── Day Content ── */
@@ -138,6 +181,12 @@
     }
     .day-title { font-size: 1.25rem; font-weight: 800; color: var(--dark); }
     .day-subtitle { font-size: 0.82rem; color: var(--muted); margin-top: 3px; }
+
+    /* ── Gold accent bar ── */
+    .gold-bar {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+    }
 
     .day-stats {
       display: flex;
@@ -253,14 +302,24 @@
 
     /* Highlighted */
     .ac-highlight {
-      background: linear-gradient(135deg, #0077B6, #00B4D8);
+      background: linear-gradient(135deg, #0D2147, #1C3F7A);
       border-radius: 14px;
       padding: 16px;
       margin-top: 8px;
       color: white;
+      border: 1px solid rgba(201,168,76,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    .ac-highlight::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
     }
     .ac-highlight .ac-title { color: white; font-size: 1rem; }
-    .ac-highlight .ac-meta  { color: rgba(255,255,255,0.75); }
+    .ac-highlight .ac-meta  { color: rgba(255,255,255,0.7); }
 
     /* Warning box */
     .ac-warn {
@@ -420,14 +479,30 @@
       color: var(--primary);
       font-weight: 600;
       text-decoration: none;
-      background: #EFF6FF;
-      border: 1px solid #BFDBFE;
+      background: #EEF2F9;
+      border: 1px solid #BFC9DF;
       border-radius: 50px;
       padding: 4px 12px;
       margin-top: 8px;
       transition: all 0.2s;
     }
-    .map-link:hover { background: #DBEAFE; }
+    .map-link:hover { background: #D9E2F3; }
+
+    /* Alumni tag */
+    .alumni-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: linear-gradient(90deg, rgba(201,168,76,0.15), rgba(201,168,76,0.05));
+      border: 1px solid rgba(201,168,76,0.4);
+      color: #7A5C00;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
 
     /* Divider */
     .divider {
@@ -465,13 +540,18 @@
 <body>
 
 <div class="header">
-  <span class="header-emoji">🌊</span>
-  <h1>제주 여행 일정</h1>
-  <p class="header-sub">모두 함께 즐기는 제주 2박 3일</p>
+  <div class="khu-badge">
+    <div class="khu-badge-dot"></div>
+    경희대학교 경영학과 동문회
+    <div class="khu-badge-dot"></div>
+  </div>
+  <h1>동문과 함께하는<br/><span class="gold">제주 2박 3일</span></h1>
+  <p class="header-sub">캠퍼스 밖에서 다시 만나는 <em>경영학과 동기들</em> ✈️</p>
+  <div class="header-divider"></div>
   <div class="header-dates">
     <span class="header-date-chip">📅 2026년 6월 21일(일) ~ 23일(화)</span>
-    <span class="header-date-chip">👥 단체 여행</span>
-    <span class="header-date-chip">🚗 렌터카</span>
+    <span class="header-date-chip gold-chip">🎓 경영학과 동문</span>
+    <span class="header-date-chip">🚗 렌터카 투어</span>
   </div>
 </div>
 
@@ -479,24 +559,25 @@
   <div class="day-tabs">
     <button class="day-tab active" onclick="switchDay(0)">🌅 Day 1 · 6/21 일</button>
     <button class="day-tab"        onclick="switchDay(1)">🏔️ Day 2 · 6/22 월</button>
-    <button class="day-tab"        onclick="switchDay(2)">🎡 Day 3 · 6/23 화</button>
+    <button class="day-tab"        onclick="switchDay(2)">🏁 Day 3 · 6/23 화</button>
   </div>
 
   <!-- ════════════════════ DAY 1 ════════════════════ -->
   <div class="day-content active" id="day-0">
     <div class="day-card">
+      <div class="gold-bar"></div>
       <div class="day-header">
         <div class="day-badge">Day 1</div>
         <div>
           <div class="day-title">제주 도착 &amp; 서부 탐방</div>
-          <div class="day-subtitle">6월 21일(일) · 공항 → 새별오름 → 용머리해안 → 서귀포</div>
+          <div class="day-subtitle">6월 21일(일) · 공항 → 새별오름 → 용머리해안 → 서귀포 · <strong>동문 재회의 날</strong></div>
         </div>
       </div>
       <div class="day-stats">
         <div class="stat"><span>✈️</span> 공항 도착 08:30</div>
         <div class="stat"><span>🛏️</span> 까사로마호텔</div>
         <div class="stat"><span>🌃</span> 천지연폭포 야간</div>
-        <div class="stat"><span>🌊</span> 해안도로 드라이브</div>
+        <div class="stat"><span>🤝</span> 동문 재회</div>
       </div>
 
       <div class="timeline">
@@ -510,12 +591,13 @@
           </div>
           <div class="tl-right">
             <div class="ac-simple">
-              <div class="ac-title">제주국제공항 도착 · 집합</div>
-              <div class="ac-meta">제주국제공항(CJU) · 전원 집합</div>
+              <div class="ac-title">제주국제공항 도착 · 동문 집합</div>
+              <div class="ac-meta">제주국제공항(CJU) · 경영학과 전원 집합</div>
               <div class="tags">
                 <span class="tag tag-blue">08:30 도착</span>
                 <span class="tag tag-green">집합 장소: 1층 출구</span>
               </div>
+              <div class="alumni-note">🎓 졸업 후 처음 다 같이 모이는 자리 — 지각은 F학점 처리 예정</div>
             </div>
           </div>
         </div>
@@ -835,7 +917,7 @@
               <div class="ac-warn-icon">⚠️</div>
               <div class="ac-warn-text">
                 <strong>내일 새벽 5시 출발 — 일찍 취침!</strong>
-                술은 적당히만. 한라산 등산을 위해 체력 비축 필수. 늦어도 22:00~23:00 취침 목표.
+                술은 적당히만. 경영학과 MT 전통은 계속되겠지만, 내일 한라산이 있다. 체력 비축 필수. 늦어도 22:00~23:00 취침 목표.
               </div>
             </div>
           </div>
@@ -848,18 +930,19 @@
   <!-- ════════════════════ DAY 2 ════════════════════ -->
   <div class="day-content" id="day-1">
     <div class="day-card">
+      <div class="gold-bar"></div>
       <div class="day-header">
         <div class="day-badge">Day 2</div>
         <div>
           <div class="day-title">한라산 등반의 날</div>
-          <div class="day-subtitle">6월 22일(월) · 영실 → 윗새오름 → 어리목 (6시간)</div>
+          <div class="day-subtitle">6월 22일(월) · 영실 → 윗새오름 → 어리목 (6시간) · <strong>동문 한라산 정복 프로젝트</strong></div>
         </div>
       </div>
       <div class="day-stats">
         <div class="stat"><span>⏰</span> 05:00 출발</div>
         <div class="stat"><span>🏔️</span> 한라산 6시간</div>
         <div class="stat"><span>📏</span> 영실-어리목 종주</div>
-        <div class="stat"><span>🚗</span> 차량 셔틀 20분</div>
+        <div class="stat"><span>🍽️</span> 완등 기념 만찬</div>
       </div>
 
       <div class="timeline">
@@ -879,6 +962,7 @@
                 <span class="note-ico">🌙</span>
                 <span>새벽 출발 전 음식물 챙기기 (에너지바·초콜릿·물 최소 1.5L/인). 핸드폰 완충 상태로 출발.</span>
               </div>
+              <div class="alumni-note">🎓 경영학과 출신답게 일정 준수 — 새벽 지각은 없다</div>
             </div>
           </div>
         </div>
@@ -934,7 +1018,7 @@
               <div class="ac-header">
                 <div>
                   <div class="ac-title">한라산 등산 — 영실↔어리목 종주</div>
-                  <div class="ac-meta">영실매표소 출발 · 총 약 6시간</div>
+                  <div class="ac-meta">영실매표소 출발 · 총 약 6시간 · 경영학과 동문 단체 등반</div>
                 </div>
                 <div class="ac-chevron">▼</div>
               </div>
@@ -1023,6 +1107,7 @@
                   <span class="note-ico">📱</span>
                   <span>국립공원 탐방 예약 여부 확인 필요 (사전예약제 운영 시). 한라산국립공원공단 앱/홈페이지 확인.</span>
                 </div>
+                <div class="alumni-note">🎓 6시간 등반 — 취업·사업 고민은 정상에서 해결. 경영학도의 도전정신으로 완등!</div>
 
                 <hr class="divider" />
                 <div class="opts-label">✅ 등산 준비물 체크</div>
@@ -1094,10 +1179,10 @@
           </div>
           <div class="tl-right">
             <div class="ac-highlight">
-              <div class="ac-title">🎉 저녁 만찬</div>
-              <div class="ac-meta">한라산 완등 기념 특별 만찬 🏔️</div>
-              <div style="margin-top:10px; font-size:0.85rem; opacity:0.9; line-height:1.6;">
-                한라산 종주 완등을 자축하는 특별한 저녁! 메뉴와 장소는 당일 기분과 체력에 따라 결정. 고기·해물·흑돼지 등 든든한 메뉴로 에너지 보충.
+              <div class="ac-title">🥂 경영학과 동문 완등 기념 만찬</div>
+              <div class="ac-meta">한라산 완등 × 동문 재회 — 특별한 저녁 🏔️🎓</div>
+              <div style="margin-top:10px; font-size:0.85rem; opacity:0.85; line-height:1.6;">
+                한라산 종주 완등 + 동문 재회를 동시에 자축하는 특별 만찬! 캠퍼스 시절 얘기부터 지금 근황까지. 고기·해물·흑돼지로 에너지 100% 충전. 오늘만큼은 ROI 계산 없이 즐기기 🍻
               </div>
             </div>
           </div>
@@ -1110,18 +1195,19 @@
   <!-- ════════════════════ DAY 3 ════════════════════ -->
   <div class="day-content" id="day-2">
     <div class="day-card">
+      <div class="gold-bar"></div>
       <div class="day-header">
         <div class="day-badge">Day 3</div>
         <div>
           <div class="day-title">서귀포 산책 &amp; 귀가</div>
-          <div class="day-subtitle">6월 23일(화) · 외돌개 → 카트레이싱 → 제주시 귀가</div>
+          <div class="day-subtitle">6월 23일(화) · 외돌개 → 카트레이싱 → 제주시 귀가 · <strong>동문 여행 피날레</strong></div>
         </div>
       </div>
       <div class="day-stats">
         <div class="stat"><span>🚶</span> 아침 산책</div>
         <div class="stat"><span>🏎️</span> 카트레이싱</div>
         <div class="stat"><span>🚗</span> 렌터카 반납 18:00</div>
-        <div class="stat"><span>🏠</span> 귀가</div>
+        <div class="stat"><span>👋</span> 아쉬운 작별</div>
       </div>
 
       <div class="timeline">
@@ -1319,10 +1405,10 @@
           </div>
           <div class="tl-right">
             <div class="ac-highlight">
-              <div class="ac-title">🏠 제주공항 → 귀가</div>
-              <div class="ac-meta">즐거웠던 2박 3일 제주 여행 마무리!</div>
-              <div style="margin-top:10px; font-size:0.85rem; opacity:0.9; line-height:1.6;">
-                수고하셨습니다! 모두 안전하게 귀가. 다음엔 더 긴 제주 여행으로 돌아와요 🌊
+              <div class="ac-title">🏠 제주공항 → 귀가 · 경희대 경영학과 동문 여행 완료!</div>
+              <div class="ac-meta">즐거웠던 2박 3일 동문 여행 마무리 🎓</div>
+              <div style="margin-top:10px; font-size:0.85rem; opacity:0.85; line-height:1.6;">
+                수고하셨습니다! 경희대 경영학과 동문답게 완벽하게 기획·실행한 제주 여행. 다음 동문 모임도 기대합니다 — 학교에서 배운 프로젝트 매니지먼트 실전 완료 ✅
               </div>
             </div>
           </div>
@@ -1333,7 +1419,7 @@
   </div><!-- /day-2 -->
 
   <div class="footer">
-    ☀️ 날씨·현장 상황에 따라 일정은 유동적으로 조정 가능 &nbsp;·&nbsp; 즐거운 제주 여행 되세요!
+    🎓 경희대학교 경영학과 동문 · 즐거운 제주 여행 되세요! &nbsp;·&nbsp; 날씨·현장 상황에 따라 일정 유동 조정 가능
   </div>
 </div>
 
