@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>제주 여행 일정 2026</title>
+  <style>
+    :root {
+      --primary: #0077B6;
+      --secondary: #00B4D8;
+      --accent: #FF6B6B;
+      --teal: #2EC4B6;
+      --dark: #023E8A;
+      --light: #F0F7FF;
+      --text: #1A1A2E;
+      --muted: #6B7280;
+      --border: #E5E7EB;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: linear-gradient(160deg, #023E8A 0%, #0077B6 50%, #00B4D8 100%);
+      min-height: 100vh;
+      color: var(--text);
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      padding: 48px 20px 24px;
+      color: white;
+    }
+    .header-emoji { font-size: 3rem; display: block; margin-bottom: 10px; }
+    .header h1 {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.3);
+    }
+    .header-sub {
+      font-size: 1rem;
+      opacity: 0.85;
+      margin-top: 8px;
+      font-weight: 400;
+    }
+    .header-dates {
+      display: inline-flex;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .header-date-chip {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      backdrop-filter: blur(6px);
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 16px 60px;
+    }
+
+    /* ── Day Tabs ── */
+    .day-tabs {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 28px 0 20px;
+      flex-wrap: wrap;
+    }
+    .day-tab {
+      padding: 12px 26px;
+      border-radius: 50px;
+      border: 2px solid rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.12);
+      color: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 700;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(8px);
+      user-select: none;
+    }
+    .day-tab:hover {
+      background: rgba(255,255,255,0.25);
+      border-color: rgba(255,255,255,0.7);
+    }
+    .day-tab.active {
+      background: white;
+      color: var(--primary);
+      border-color: white;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    }
+
+    /* ── Day Content ── */
+    .day-content { display: none; }
+    .day-content.active { display: block; animation: fadeUp 0.35s ease; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Day Card ── */
+    .day-card {
+      background: white;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+    }
+
+    .day-header {
+      padding: 22px 26px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .day-badge {
+      background: var(--primary);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 0.82rem;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+    .day-title { font-size: 1.25rem; font-weight: 800; color: var(--dark); }
+    .day-subtitle { font-size: 0.82rem; color: var(--muted); margin-top: 3px; }
+
+    .day-stats {
+      display: flex;
+      gap: 18px;
+      padding: 14px 26px;
+      background: var(--light);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .stat { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); }
+    .stat span { font-size: 1rem; }
+
+    /* ── Timeline ── */
+    .timeline { padding: 20px 26px 26px; }
+
+    .tl-item {
+      display: flex;
+      gap: 14px;
+      position: relative;
+    }
+
+    .tl-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 52px;
+    }
+    .tl-time {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+      white-space: nowrap;
+      height: 20px;
+      display: flex;
+      align-items: center;
+    }
+    .tl-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-top: 6px;
+    }
+    .tl-line {
+      width: 2px;
+      flex: 1;
+      min-height: 16px;
+      margin: 4px auto 0;
+      background: linear-gradient(to bottom, var(--border), transparent);
+    }
+
+    .tl-right {
+      flex: 1;
+      padding-bottom: 18px;
+      min-width: 0;
+    }
+
+    /* Icon colors */
+    .ic-transport  { background: #DBEAFE; }
+    .ic-nature     { background: #D1FAE5; }
+    .ic-food       { background: #FED7AA; }
+    .ic-hotel      { background: #EDE9FE; }
+    .ic-water      { background: #CFFAFE; }
+    .ic-night      { background: #E0E7FF; }
+    .ic-tip        { background: #FEF3C7; }
+    .ic-hike       { background: #D1FAE5; }
+    .ic-car        { background: #F3F4F6; }
+
+    /* ── Activity Card ── */
+    .ac {
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-top: 8px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .ac:hover { border-color: var(--secondary); box-shadow: 0 4px 18px rgba(0,119,182,0.08); }
+
+    .ac-header {
+      padding: 13px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      user-select: none;
+    }
+    .ac-title { font-size: 0.97rem; font-weight: 700; color: var(--dark); }
+    .ac-meta  { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .ac-chevron { color: var(--muted); font-size: 0.9rem; transition: transform 0.25s; flex-shrink: 0; margin-top: 2px; }
+    .ac.open .ac-chevron { transform: rotate(180deg); }
+
+    .ac-body {
+      display: none;
+      padding: 2px 16px 14px;
+      border-top: 1px solid #F3F4F6;
+    }
+    .ac.open .ac-body { display: block; }
+
+    /* Simple (no-expand) */
+    .ac-simple {
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 13px 16px;
+      margin-top: 8px;
+    }
+    .ac-simple .ac-title { font-size: 0.95rem; }
+
+    /* Highlighted */
+    .ac-highlight {
+      background: linear-gradient(135deg, #0077B6, #00B4D8);
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 8px;
+      color: white;
+    }
+    .ac-highlight .ac-title { color: white; font-size: 1rem; }
+    .ac-highlight .ac-meta  { color: rgba(255,255,255,0.75); }
+
+    /* Warning box */
+    .ac-warn {
+      border: 1.5px solid #FCD34D;
+      background: #FFFBEB;
+      border-radius: 14px;
+      padding: 12px 16px;
+      margin-top: 8px;
+      display: flex;
+      gap: 10px;
+    }
+    .ac-warn-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .ac-warn-text { font-size: 0.84rem; color: #92400E; line-height: 1.55; }
+    .ac-warn-text strong { font-weight: 700; display: block; margin-bottom: 2px; }
+
+    /* Tags */
+    .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .tag {
+      padding: 3px 10px;
+      border-radius: 50px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .tag-blue   { background: #DBEAFE; color: #1D4ED8; }
+    .tag-green  { background: #D1FAE5; color: #065F46; }
+    .tag-yellow { background: #FEF3C7; color: #92400E; }
+    .tag-red    { background: #FFE4E6; color: #9F1239; }
+    .tag-purple { background: #EDE9FE; color: #5B21B6; }
+
+    /* Options grid */
+    .opts-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 12px 0 8px;
+    }
+    .opts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 8px;
+    }
+    .opt {
+      background: #F9FAFB;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .opt:hover  { border-color: var(--primary); background: #EFF6FF; }
+    .opt.picked { border-color: var(--primary); background: #EFF6FF; }
+    .opt-name { font-weight: 700; font-size: 0.88rem; color: var(--dark); }
+    .opt-desc { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
+    .opt-check { float: right; color: var(--primary); font-size: 1rem; display: none; }
+    .opt.picked .opt-check { display: inline; }
+
+    /* Note (info) */
+    .note {
+      border-radius: 10px;
+      padding: 11px 14px;
+      margin-top: 10px;
+      display: flex;
+      gap: 9px;
+      font-size: 0.83rem;
+      line-height: 1.55;
+    }
+    .note-i   { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+    .note-w   { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; }
+    .note-g   { background: #F0FDF4; border: 1px solid #BBF7D0; color: #065F46; }
+    .note-ico { font-size: 1rem; flex-shrink: 0; }
+
+    /* Route */
+    .route {
+      background: #F8FAFC;
+      border-radius: 10px;
+      padding: 13px 15px;
+      margin-top: 10px;
+    }
+    .route-title { font-size: 0.78rem; font-weight: 700; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .route-steps { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+    .route-step  { font-size: 0.83rem; font-weight: 600; color: var(--dark); }
+    .route-arr   { color: var(--muted); font-size: 0.75rem; }
+    .route-time  { font-size: 0.75rem; color: var(--muted); background: white; border: 1px solid var(--border); border-radius: 50px; padding: 2px 8px; margin-left: 4px; }
+
+    /* Checklist */
+    .checklist { list-style: none; margin-top: 10px; }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      padding: 6px 0;
+      cursor: pointer;
+      font-size: 0.86rem;
+      color: var(--text);
+      border-bottom: 1px solid #F3F4F6;
+      transition: opacity 0.2s;
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .chk-box {
+      width: 19px; height: 19px;
+      border: 2px solid #D1D5DB;
+      border-radius: 5px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+      margin-top: 1px;
+    }
+    .checklist li.done .chk-box { background: var(--teal); border-color: var(--teal); color: white; }
+    .checklist li.done .chk-text { text-decoration: line-through; color: var(--muted); }
+
+    /* Hike path */
+    .hike-path {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 12px;
+    }
+    .hike-node {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .hike-dot-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 24px;
+    }
+    .hike-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid white;
+      box-shadow: 0 0 0 2px var(--primary);
+      flex-shrink: 0;
+    }
+    .hike-dot.start { background: var(--teal); box-shadow: 0 0 0 2px var(--teal); }
+    .hike-dot.end   { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+    .hike-connector {
+      width: 2px; flex: 1;
+      background: repeating-linear-gradient(to bottom, var(--primary) 0, var(--primary) 4px, transparent 4px, transparent 8px);
+      min-height: 22px;
+    }
+    .hike-info { padding-bottom: 10px; flex: 1; }
+    .hike-name { font-size: 0.88rem; font-weight: 700; color: var(--dark); }
+    .hike-sub  { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+    /* Map link */
+    .map-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      border-radius: 50px;
+      padding: 4px 12px;
+      margin-top: 8px;
+      transition: all 0.2s;
+    }
+    .map-link:hover { background: #DBEAFE; }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px dashed var(--border);
+      margin: 14px 0;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.78rem;
+      margin-top: 32px;
+      padding-bottom: 20px;
+    }
+
+    @media (max-width: 540px) {
+      .day-tab { padding: 10px 18px; font-size: 0.82rem; }
+      .timeline { padding: 16px 16px 20px; }
+      .day-header { padding: 18px 18px 14px; }
+      .day-stats  { padding: 12px 18px; }
+      .tl-left { min-width: 44px; }
+    }
+
+    @media print {
+      body { background: white; }
+      .day-tabs { display: none; }
+      .day-content { display: block !important; }
+      .ac-body { display: block !important; }
+      .ac-chevron { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-emoji">🌊</span>
+  <h1>제주 여행 일정</h1>
+  <p class="header-sub">모두 함께 즐기는 제주 2박 3일</p>
+  <div class="header-dates">
+    <span class="header-date-chip">📅 2026년 6월 21일(일) ~ 23일(화)</span>
+    <span class="header-date-chip">👥 단체 여행</span>
+    <span class="header-date-chip">🚗 렌터카</span>
+  </div>
+</div>
+
+<div class="container">
+  <div class="day-tabs">
+    <button class="day-tab active" onclick="switchDay(0)">🌅 Day 1 · 6/21 일</button>
+    <button class="day-tab"        onclick="switchDay(1)">🏔️ Day 2 · 6/22 월</button>
+    <button class="day-tab"        onclick="switchDay(2)">🎡 Day 3 · 6/23 화</button>
+  </div>
+
+  <!-- ════════════════════ DAY 1 ════════════════════ -->
+  <div class="day-content active" id="day-0">
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-badge">Day 1</div>
+        <div>
+          <div class="day-title">제주 도착 &amp; 서부 탐방</div>
+          <div class="day-subtitle">6월 21일(일) · 공항 → 새별오름 → 용머리해안 → 서귀포</div>
+        </div>
+      </div>
+      <div class="day-stats">
+        <div class="stat"><span>✈️</span> 공항 도착 08:30</div>
+        <div class="stat"><span>🛏️</span> 까사로마호텔</div>
+        <div class="stat"><span>🌃</span> 천지연폭포 야간</div>
+        <div class="stat"><span>🌊</span> 해안도로 드라이브</div>
+      </div>
+
+      <div class="timeline">
+
+        <!-- 08:30 공항 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">08:30</div>
+            <div class="tl-icon ic-transport">✈️</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac-simple">
+              <div class="ac-title">제주국제공항 도착 · 집합</div>
+              <div class="ac-meta">제주국제공항(CJU) · 전원 집합</div>
+              <div class="tags">
+                <span class="tag tag-blue">08:30 도착</span>
+                <span class="tag tag-green">집합 장소: 1층 출구</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 09:00 렌터카 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">09:00</div>
+            <div class="tl-icon ic-car">🚗</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">렌터카 픽업</div>
+                  <div class="ac-meta">공항 내 렌터카 센터</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="note note-w">
+                  <span class="note-ico">⚠️</span>
+                  <span>면허증·예약 확인서 지참 필수. 풀커버 보험 여부 미리 확인. 출발 전 차량 외관 사진 촬영 권장.</span>
+                </div>
+                <div class="note note-i">
+                  <span class="note-ico">ℹ️</span>
+                  <span>제주공항 1층 도착홀 렌터카 연계 셔틀 타는 곳에서 픽업. 9인승 이상 승합차 여부 사전 확인 필요.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 새별오름 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">~10:00</div>
+            <div class="tl-icon ic-nature">⛰️</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">새별오름</div>
+                  <div class="ac-meta">제주시 애월읍 · 약 1시간 소요</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="tags">
+                  <span class="tag tag-green">소요 1시간</span>
+                  <span class="tag tag-blue">난이도 중하</span>
+                  <span class="tag tag-yellow">무료</span>
+                </div>
+                <div class="note note-g" style="margin-top:10px;">
+                  <span class="note-ico">🌿</span>
+                  <span>공항에서 약 20분 거리. 해발 519m, 정상에서 제주 서부 전망 탁월. 초입~정상 약 30분, 일주 가능.</span>
+                </div>
+                <div class="note note-i">
+                  <span class="note-ico">👟</span>
+                  <span>운동화·스니커즈 가능. 햇빛 강하니 선크림·모자 필수. 화장실은 주차장에 있음.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 점심 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">11:30</div>
+            <div class="tl-icon ic-food">🍽️</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">점심 식사</div>
+                  <div class="ac-meta">중문·산방산 방면 · 메뉴 선택 필요</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="opts-label">🍴 식당 옵션 (클릭해서 선택)</div>
+                <div class="opts-grid">
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🍜 순몌밀막국수</div>
+                    <div class="opt-desc">제주 특산 메밀 막국수 맛집<br/>시원하고 깔끔한 맛</div>
+                  </div>
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🐟 갈치조림</div>
+                    <div class="opt-desc">제주 은갈치 조림<br/>제주 대표 향토음식</div>
+                  </div>
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🍖 흑돼지구이</div>
+                    <div class="opt-desc">제주 흑돼지 점심<br/>대패삼겹·목살</div>
+                  </div>
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🥘 고기국수</div>
+                    <div class="opt-desc">제주식 돼지뼈국물<br/>든든한 한 끼</div>
+                  </div>
+                </div>
+                <div class="note note-w">
+                  <span class="note-ico">⏰</span>
+                  <span>점심 피크타임(12~13시) 전 입장 권장. 용머리해안 13:00 도착을 위해 12:30 전에 출발.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 용머리해안 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">13:00</div>
+            <div class="tl-icon ic-water">🌊</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">용머리해안</div>
+                  <div class="ac-meta">서귀포시 안덕면 · 약 1~1.5시간</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="tags">
+                  <span class="tag tag-blue">입장료 있음</span>
+                  <span class="tag tag-green">해안 트레킹</span>
+                  <span class="tag tag-yellow">기상에 따라 통제</span>
+                </div>
+                <div class="note note-w" style="margin-top:10px;">
+                  <span class="note-ico">🌊</span>
+                  <span><strong>출입 가능 여부 현장 확인 필수!</strong> 파도·기상에 따라 통제될 수 있음. 출발 전 제주관광공사 홈페이지 또는 전화 확인 권장.</span>
+                </div>
+                <div class="note note-g">
+                  <span class="note-ico">📸</span>
+                  <span>180만년 전 화산 활동으로 형성된 수성화산체. 제주도에서 가장 오래된 지층. 포토스팟 다수.</span>
+                </div>
+                <div class="note note-i">
+                  <span class="note-ico">👟</span>
+                  <span>해안 암벽 구간이 있어 미끄러울 수 있음. 운동화 필수. 썬크림·선글라스 챙기기.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 해안도로 이동 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">14:30</div>
+            <div class="tl-icon ic-car">🚗</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac-simple">
+              <div class="ac-title">해안도로 따라 서귀포 이동</div>
+              <div class="ac-meta">산방산 해안도로 → 대평포구 → 서귀포 · 약 40분</div>
+              <div class="note note-g" style="margin-top:8px;">
+                <span class="note-ico">🌅</span>
+                <span>서귀포 해안도로는 제주 드라이브 명소. 창문 열고 바람 맞으며 여유롭게 이동 추천.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 숙소 체크인 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">15:30</div>
+            <div class="tl-icon ic-hotel">🏨</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">까사로마 호텔 체크인 &amp; 휴식</div>
+                  <div class="ac-meta">서귀포시 · 수영장 이용 가능</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="tags">
+                  <span class="tag tag-purple">체크인 15:00~</span>
+                  <span class="tag tag-blue">수영장 ✓</span>
+                </div>
+                <div class="note note-g" style="margin-top:10px;">
+                  <span class="note-ico">🏊</span>
+                  <span>수영복·수건 챙겨오기. 수영장에서 피로 풀기. 저녁 외출 전 간단히 씻고 나가면 좋음.</span>
+                </div>
+                <div class="note note-i">
+                  <span class="note-ico">🛍️</span>
+                  <span>짐 정리 후 인근 이마트24/CU 편의점 간식류·음료 구매 추천. 숙소 근처 편의점 위치 확인.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 저녁 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">18:30</div>
+            <div class="tl-icon ic-food">🍽️</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">저녁 식사</div>
+                  <div class="ac-meta">올레시장 / 이중섭거리 / 칠십리특화거리</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="opts-label">🌙 저녁 메뉴 옵션</div>
+                <div class="opts-grid">
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🐷 흑돼지구이</div>
+                    <div class="opt-desc">제주 흑돼지 대패삼겹<br/>서귀포 흑돼지 골목</div>
+                  </div>
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🐟 회</div>
+                    <div class="opt-desc">서귀포 항구 싱싱한 회<br/>자리돔회 추천</div>
+                  </div>
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🐟 갈치요리</div>
+                    <div class="opt-desc">갈치조림 or 갈치구이<br/>제주 은갈치 특선</div>
+                  </div>
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🌟 시현 추천</div>
+                    <div class="opt-desc">시현 추천 맛집<br/>현지인 픽</div>
+                  </div>
+                </div>
+                <div class="opts-label">📍 위치 옵션</div>
+                <div class="opts-grid">
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🏪 서귀포 올레시장</div>
+                    <div class="opt-desc">야시장·길거리음식<br/>활기찬 분위기</div>
+                  </div>
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🎨 이중섭거리</div>
+                    <div class="opt-desc">예쁜 골목 & 갤러리<br/>감성 있는 분위기</div>
+                  </div>
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🌊 칠십리특화거리</div>
+                    <div class="opt-desc">서귀포 명물거리<br/>다양한 식당</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 천지연폭포 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">20:30</div>
+            <div class="tl-icon ic-night">🌙</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">천지연폭포 야간 산책</div>
+                  <div class="ac-meta">서귀포시 · 야간개장 · 약 40~60분</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="tags">
+                  <span class="tag tag-blue">입장료 있음</span>
+                  <span class="tag tag-purple">야간개장</span>
+                  <span class="tag tag-green">도보 20분</span>
+                </div>
+                <div class="note note-g" style="margin-top:10px;">
+                  <span class="note-ico">✨</span>
+                  <span>야간 조명과 함께하는 폭포 산책. 낮보다 서늘하고 낭만적. 폭포 높이 22m, 천연기념물 지정 구간.</span>
+                </div>
+                <div class="note note-i">
+                  <span class="note-ico">🕙</span>
+                  <span>야간개장 시간 사전 확인 필요 (보통 21:30~22:00 마감). 저녁 식사 후 소화도 할 겸 산책으로 딱.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 취침 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">22:00</div>
+            <div class="tl-icon ic-tip">😴</div>
+          </div>
+          <div class="tl-right">
+            <div class="ac-warn">
+              <div class="ac-warn-icon">⚠️</div>
+              <div class="ac-warn-text">
+                <strong>내일 새벽 5시 출발 — 일찍 취침!</strong>
+                술은 적당히만. 한라산 등산을 위해 체력 비축 필수. 늦어도 22:00~23:00 취침 목표.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /timeline -->
+    </div><!-- /day-card -->
+  </div><!-- /day-0 -->
+
+  <!-- ════════════════════ DAY 2 ════════════════════ -->
+  <div class="day-content" id="day-1">
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-badge">Day 2</div>
+        <div>
+          <div class="day-title">한라산 등반의 날</div>
+          <div class="day-subtitle">6월 22일(월) · 영실 → 윗새오름 → 어리목 (6시간)</div>
+        </div>
+      </div>
+      <div class="day-stats">
+        <div class="stat"><span>⏰</span> 05:00 출발</div>
+        <div class="stat"><span>🏔️</span> 한라산 6시간</div>
+        <div class="stat"><span>📏</span> 영실-어리목 종주</div>
+        <div class="stat"><span>🚗</span> 차량 셔틀 20분</div>
+      </div>
+
+      <div class="timeline">
+
+        <!-- 05:00 출발 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">05:00</div>
+            <div class="tl-icon ic-car">🚗</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac-simple">
+              <div class="ac-title">숙소 출발</div>
+              <div class="ac-meta">까사로마 호텔 → 영실매표소 · 약 50분</div>
+              <div class="note note-w" style="margin-top:8px;">
+                <span class="note-ico">🌙</span>
+                <span>새벽 출발 전 음식물 챙기기 (에너지바·초콜릿·물 최소 1.5L/인). 핸드폰 완충 상태로 출발.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 아침식사 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">05:00</div>
+            <div class="tl-icon ic-food">🍳</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">아침 식사 선택</div>
+                  <div class="ac-meta">출발 전 또는 이동 중 식사</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="opts-label">🌅 아침 옵션 (택 1)</div>
+                <div class="opts-grid">
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🍜 인근 24시 식당</div>
+                    <div class="opt-desc">해장국 / 순두부<br/>패스트푸드 (5:00 출발)</div>
+                  </div>
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🍜 숙소 간편식</div>
+                    <div class="opt-desc">라면 or 김밥<br/>→ 5:30 출발로 변경</div>
+                  </div>
+                </div>
+                <div class="note note-i" style="margin-top:10px;">
+                  <span class="note-ico">💡</span>
+                  <span>전날 편의점에서 삼각김밥·컵라면·에너지바 미리 구입해두면 편리. 등산 중 간식도 꼭 챙기기.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 한라산 등산 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">06:00</div>
+            <div class="tl-icon ic-hike">🏔️</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">한라산 등산 — 영실↔어리목 종주</div>
+                  <div class="ac-meta">영실매표소 출발 · 총 약 6시간</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="tags">
+                  <span class="tag tag-green">총 6시간</span>
+                  <span class="tag tag-blue">영실→어리목</span>
+                  <span class="tag tag-yellow">무료 입장</span>
+                  <span class="tag tag-red">체력 소모 ↑↑</span>
+                </div>
+
+                <div style="margin-top:14px;">
+                  <div class="opts-label">🗺️ 등산 코스</div>
+                  <div class="hike-path">
+                    <div class="hike-node">
+                      <div class="hike-dot-col">
+                        <div class="hike-dot start"></div>
+                        <div class="hike-connector"></div>
+                      </div>
+                      <div class="hike-info">
+                        <div class="hike-name">🅿️ 영실매표소 (출발)</div>
+                        <div class="hike-sub">해발 약 1,280m · 주차 후 탐방 시작</div>
+                      </div>
+                    </div>
+                    <div class="hike-node">
+                      <div class="hike-dot-col">
+                        <div class="hike-dot"></div>
+                        <div class="hike-connector"></div>
+                      </div>
+                      <div class="hike-info">
+                        <div class="hike-name">🌲 영실기암 구간</div>
+                        <div class="hike-sub">오백장군 기암괴석 감상 구간</div>
+                      </div>
+                    </div>
+                    <div class="hike-node">
+                      <div class="hike-dot-col">
+                        <div class="hike-dot"></div>
+                        <div class="hike-connector"></div>
+                      </div>
+                      <div class="hike-info">
+                        <div class="hike-name">🏕️ 윗새오름 대피소</div>
+                        <div class="hike-sub">해발 1,700m · 중간 휴식 포인트</div>
+                      </div>
+                    </div>
+                    <div class="hike-node">
+                      <div class="hike-dot-col">
+                        <div class="hike-dot"></div>
+                        <div class="hike-connector"></div>
+                      </div>
+                      <div class="hike-info">
+                        <div class="hike-name">🔭 방아오름 전망대</div>
+                        <div class="hike-sub">한라산 분화구 방향 전망</div>
+                      </div>
+                    </div>
+                    <div class="hike-node">
+                      <div class="hike-dot-col">
+                        <div class="hike-dot"></div>
+                        <div class="hike-connector"></div>
+                      </div>
+                      <div class="hike-info">
+                        <div class="hike-name">⛰️ 윗새오름 정상</div>
+                        <div class="hike-sub">해발 1,726m · 최고 전망 포인트</div>
+                      </div>
+                    </div>
+                    <div class="hike-node">
+                      <div class="hike-dot-col">
+                        <div class="hike-dot end"></div>
+                      </div>
+                      <div class="hike-info">
+                        <div class="hike-name">🅿️ 어리목탐방안내소 (도착)</div>
+                        <div class="hike-sub">해발 약 970m · 종료 후 차량 회수 필요</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note note-w" style="margin-top:12px;">
+                  <span class="note-ico">🚗</span>
+                  <span><strong>차량 회수 필요!</strong> 영실↔어리목 차량 이동 약 20분. 어리목 도착 후 일부 인원이 택시 or 차편으로 영실 주차장 차 회수.</span>
+                </div>
+                <div class="note note-i">
+                  <span class="note-ico">☀️</span>
+                  <span>6월 한라산은 기온이 높을 수 있음. 고산지대 갑작스러운 날씨 변화 대비 얇은 바람막이 지참. 물 1.5L 이상 필수.</span>
+                </div>
+                <div class="note note-g">
+                  <span class="note-ico">📱</span>
+                  <span>국립공원 탐방 예약 여부 확인 필요 (사전예약제 운영 시). 한라산국립공원공단 앱/홈페이지 확인.</span>
+                </div>
+
+                <hr class="divider" />
+                <div class="opts-label">✅ 등산 준비물 체크</div>
+                <ul class="checklist" id="hike-checklist">
+                  <li onclick="toggleCheck(this)"><div class="chk-box"></div><span class="chk-text">등산화 또는 트레킹화</span></li>
+                  <li onclick="toggleCheck(this)"><div class="chk-box"></div><span class="chk-text">물 최소 1.5L (인당)</span></li>
+                  <li onclick="toggleCheck(this)"><div class="chk-box"></div><span class="chk-text">간식 (에너지바·초콜릿·사탕)</span></li>
+                  <li onclick="toggleCheck(this)"><div class="chk-box"></div><span class="chk-text">바람막이 / 얇은 겉옷</span></li>
+                  <li onclick="toggleCheck(this)"><div class="chk-box"></div><span class="chk-text">선크림 + 선글라스 + 모자</span></li>
+                  <li onclick="toggleCheck(this)"><div class="chk-box"></div><span class="chk-text">핸드폰 완충 + 보조배터리</span></li>
+                  <li onclick="toggleCheck(this)"><div class="chk-box"></div><span class="chk-text">비상 상비약 (진통제·밴드)</span></li>
+                  <li onclick="toggleCheck(this)"><div class="chk-box"></div><span class="chk-text">장갑 (쌀쌀할 수 있음)</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 점심 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">13:00</div>
+            <div class="tl-icon ic-food">🍽️</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">하산 후 점심 식사</div>
+                  <div class="ac-meta">어리목 / 1100도로 주변</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="note note-g">
+                  <span class="note-ico">😋</span>
+                  <span>하산 후 허기가 심할 예정. 든든한 국밥·갈비탕·짜장면 같은 뜨끈한 음식 추천. 어리목 인근 식당 사전 검색 권장.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 숙소 복귀 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">14:30</div>
+            <div class="tl-icon ic-hotel">🏨</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac-simple">
+              <div class="ac-title">숙소 복귀 &amp; 자유 휴식</div>
+              <div class="ac-meta">까사로마 호텔 · 수영 or 낮잠</div>
+              <div class="note note-g" style="margin-top:8px;">
+                <span class="note-ico">💆</span>
+                <span>등산 후 근육통 예상. 스트레칭·마사지·수영으로 몸 풀기. 저녁 만찬 전 충분한 휴식.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 저녁 만찬 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">19:00</div>
+            <div class="tl-icon ic-food">🥂</div>
+          </div>
+          <div class="tl-right">
+            <div class="ac-highlight">
+              <div class="ac-title">🎉 저녁 만찬</div>
+              <div class="ac-meta">한라산 완등 기념 특별 만찬 🏔️</div>
+              <div style="margin-top:10px; font-size:0.85rem; opacity:0.9; line-height:1.6;">
+                한라산 종주 완등을 자축하는 특별한 저녁! 메뉴와 장소는 당일 기분과 체력에 따라 결정. 고기·해물·흑돼지 등 든든한 메뉴로 에너지 보충.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div><!-- /day-1 -->
+
+  <!-- ════════════════════ DAY 3 ════════════════════ -->
+  <div class="day-content" id="day-2">
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-badge">Day 3</div>
+        <div>
+          <div class="day-title">서귀포 산책 &amp; 귀가</div>
+          <div class="day-subtitle">6월 23일(화) · 외돌개 → 카트레이싱 → 제주시 귀가</div>
+        </div>
+      </div>
+      <div class="day-stats">
+        <div class="stat"><span>🚶</span> 아침 산책</div>
+        <div class="stat"><span>🏎️</span> 카트레이싱</div>
+        <div class="stat"><span>🚗</span> 렌터카 반납 18:00</div>
+        <div class="stat"><span>🏠</span> 귀가</div>
+      </div>
+
+      <div class="timeline">
+
+        <!-- 아침 식사 & 산책 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">08:00</div>
+            <div class="tl-icon ic-food">☕</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac-simple">
+              <div class="ac-title">아침 식사</div>
+              <div class="ac-meta">숙소 인근 카페 or 편의점</div>
+              <div class="note note-g" style="margin-top:8px;">
+                <span class="note-ico">🌅</span>
+                <span>마지막 날 아침. 느긋하게 커피 한 잔. 체크아웃 전 짐 정리 먼저.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 산책 코스 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">09:00</div>
+            <div class="tl-icon ic-water">🚶</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">아침 산책 코스 선택</div>
+                  <div class="ac-meta">외돌개 / 소천지 / 쇠소깍 · 약 1.5~2시간</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="opts-label">🌊 산책 코스 옵션 (택 1 또는 여러 곳)</div>
+                <div class="opts-grid">
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🗿 외돌개</div>
+                    <div class="opt-desc">바다 위 홀로 선 기암<br/>서귀포 대표 명소<br/>도보 약 20~30분</div>
+                  </div>
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🌊 소천지</div>
+                    <div class="opt-desc">미니 백두산 천지 느낌<br/>서귀포 숨은 명소<br/>짧은 코스</div>
+                  </div>
+                  <div class="opt" onclick="pickOpt(this)">
+                    <span class="opt-check">✓</span>
+                    <div class="opt-name">🛶 쇠소깍</div>
+                    <div class="opt-desc">투명카약 체험 가능<br/>에메랄드빛 계곡<br/>카약 30분~1시간</div>
+                  </div>
+                </div>
+                <div class="note note-i" style="margin-top:10px;">
+                  <span class="note-ico">💡</span>
+                  <span>쇠소깍 투명카약은 인기가 많아 현장 대기 시간 길 수 있음. 일찍 가거나 사전 예약 확인 권장.</span>
+                </div>
+                <div class="note note-g">
+                  <span class="note-ico">📸</span>
+                  <span>외돌개 + 소천지는 이동거리 가깝고 묶어서 돌면 효율적. 카트레이싱 전 체력 아끼기.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 카트레이싱 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">11:00</div>
+            <div class="tl-icon ic-car">🏎️</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">윈드1947 테마파크 · 카트레이싱</div>
+                  <div class="ac-meta">서귀포시 · 도착 후 현장 예약</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="tags">
+                  <span class="tag tag-red">유료</span>
+                  <span class="tag tag-blue">현장 예약</span>
+                  <span class="tag tag-green">약 30~60분</span>
+                </div>
+                <div class="note note-g" style="margin-top:10px;">
+                  <span class="note-ico">🏎️</span>
+                  <span>윈드1947 테마파크 내 카트레이싱 트랙. 도착 후 현장 접수. 대기 시간 있을 수 있으니 일찍 도착 권장.</span>
+                </div>
+                <div class="note note-w">
+                  <span class="note-ico">⚠️</span>
+                  <span>카트레이싱 외에도 다양한 어트랙션 있음. 렌터카 반납 시간(18:00) 고려하여 시간 배분 주의.</span>
+                </div>
+                <div class="note note-i">
+                  <span class="note-ico">👕</span>
+                  <span>헬멧 제공. 긴 바지 권장 (안전 장비 착용 시 편리). 샌들보다 운동화 착용 추천.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 늦은 점심 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">13:30</div>
+            <div class="tl-icon ic-food">🍽️</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">늦은 점심</div>
+                  <div class="ac-meta">서귀포 or 이동 중 · 마지막 제주 밥상</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="note note-g">
+                  <span class="note-ico">🍜</span>
+                  <span>마지막 제주 식사! 아직 못 먹어본 메뉴로 선택. 고기국수·해물뚝배기·전복죽 등 제주 특색 있는 메뉴 추천.</span>
+                </div>
+                <div class="note note-w">
+                  <span class="note-ico">⏰</span>
+                  <span>점심 후 제주시까지 이동 약 1시간 소요. 렌터카 반납 18:00 엄수. 15:00~15:30 출발 목표.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 제주시 이동 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">15:30</div>
+            <div class="tl-icon ic-car">🚗</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac-simple">
+              <div class="ac-title">서귀포 → 제주시 이동</div>
+              <div class="ac-meta">약 1시간 소요 (도로 상황에 따라 변동)</div>
+              <div class="note note-w" style="margin-top:8px;">
+                <span class="note-ico">⏰</span>
+                <span>성수기·퇴근시간 정체 가능성. 여유 있게 이동. 이동 중 편의점 들러 공항 간식 구매 가능.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 렌터카 반납 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">18:00</div>
+            <div class="tl-icon ic-car">🔑</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-right">
+            <div class="ac" onclick="toggleAc(this)">
+              <div class="ac-header">
+                <div>
+                  <div class="ac-title">렌터카 반납</div>
+                  <div class="ac-meta">제주시 렌터카 업체 · 18:00</div>
+                </div>
+                <div class="ac-chevron">▼</div>
+              </div>
+              <div class="ac-body">
+                <div class="opts-label">✅ 반납 전 체크리스트</div>
+                <ul class="checklist" id="car-checklist">
+                  <li onclick="toggleCheck(this)"><div class="chk-box"></div><span class="chk-text">차량 내부 쓰레기 정리</span></li>
+                  <li onclick="toggleCheck(this)"><div class="chk-box"></div><span class="chk-text">개인 물건 전부 꺼내기</span></li>
+                  <li onclick="toggleCheck(this)"><div class="chk-box"></div><span class="chk-text">충전기·우산·선글라스 확인</span></li>
+                  <li onclick="toggleCheck(this)"><div class="chk-box"></div><span class="chk-text">차량 외관 스크래치 확인</span></li>
+                  <li onclick="toggleCheck(this)"><div class="chk-box"></div><span class="chk-text">주유 확인 (원복 조건 확인)</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 귀가 -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-time">이후</div>
+            <div class="tl-icon ic-transport">✈️</div>
+          </div>
+          <div class="tl-right">
+            <div class="ac-highlight">
+              <div class="ac-title">🏠 제주공항 → 귀가</div>
+              <div class="ac-meta">즐거웠던 2박 3일 제주 여행 마무리!</div>
+              <div style="margin-top:10px; font-size:0.85rem; opacity:0.9; line-height:1.6;">
+                수고하셨습니다! 모두 안전하게 귀가. 다음엔 더 긴 제주 여행으로 돌아와요 🌊
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div><!-- /day-2 -->
+
+  <div class="footer">
+    ☀️ 날씨·현장 상황에 따라 일정은 유동적으로 조정 가능 &nbsp;·&nbsp; 즐거운 제주 여행 되세요!
+  </div>
+</div>
+
+<script>
+  function switchDay(idx) {
+    document.querySelectorAll('.day-tab').forEach((t, i) => {
+      t.classList.toggle('active', i === idx);
+    });
+    document.querySelectorAll('.day-content').forEach((c, i) => {
+      c.classList.toggle('active', i === idx);
+    });
+  }
+
+  function toggleAc(card) {
+    card.classList.toggle('open');
+  }
+
+  function pickOpt(el) {
+    // Allow multi-select within each opts-grid
+    el.classList.toggle('picked');
+  }
+
+  function toggleCheck(li) {
+    li.classList.toggle('done');
+  }
+</script>
+</body>
+</html>
